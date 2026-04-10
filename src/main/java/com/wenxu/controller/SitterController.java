@@ -4,16 +4,16 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wenxu.common.Result;
 import com.wenxu.common.BaseContext;
 import com.wenxu.entity.Sitter;
-import com.wenxu.mapper.SitterInfoMapper;
+import com.wenxu.mapper.SitterMapper;
 import org.springframework.web.bind.annotation.*;
 import jakarta.annotation.Resource;
 
 @RestController
 @RequestMapping("/api/sitter")
-public class SitterInfoController {
+public class SitterController {
 
     @Resource
-    private SitterInfoMapper sitterInfoMapper; // 记得建一下这个 Mapper 接口哦！
+    private SitterMapper sitterInfoMapper;
 
     /**
      * 提交宠托师入驻申请
@@ -32,7 +32,11 @@ public class SitterInfoController {
 
         // 2. 补全系统字段
         sitter.setUserId(currentUserId);
-        sitter.setStatus(0); // 0代表待审核
+        //  状态分离，各司其职
+        sitter.setAuditStatus(0); // 审核状态：0待审核
+        sitter.setWorkStatus(0);  // 工作状态：0休息中 (必须等审核通过了，才能让他改成1)
+        sitter.setOrderCount(0); // 新人接单数为 0
+        sitter.setRating(5.0);
 
         // 3. 插入数据库
         sitterInfoMapper.insert(sitter);
