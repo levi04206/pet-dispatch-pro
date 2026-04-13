@@ -13,6 +13,7 @@
 - 配置与交付基建推进中：已外置数据库、Redis、JWT 配置，新增本地配置示例和 `docs/schema.sql`。
 - 第三阶段 Service 层重构已启动：宠物模块已从 Controller 直连 Mapper 调整为 Controller -> Service -> Mapper。
 - 宠托师申请与管理端审核已迁移到 `SitterServiceImpl`，Controller 只负责参数接收和返回包装。
+- 订单创建、支付、公共池、抢单、开始服务、完成服务已迁移到 `OrdersServiceImpl`，保留原有状态流转条件。
 
 ## 技术栈
 
@@ -39,6 +40,6 @@
 ## 下一步目标
 
 - 继续扩大 DTO/VO、Spring Validation、MapStruct 覆盖范围，逐步替换 Controller 直接接收 Entity 的接口。
-- 继续推进 Service 层重构，下一步优先迁移订单创建、支付、抢单、履约状态流转逻辑。
+- Service 层主干重构已覆盖宠物、宠托师、订单模块，下一步优先补充核心链路测试和订单并发控制。
 - 第四阶段加强权限与安全：引入 Sa-Token、区分用户/宠托师/管理员权限、外置密钥和本地配置。
 - 第五阶段完善交付标准：后续可在 `docs/schema.sql` 基础上接入 Flyway，补充越权删除和并发抢单测试。
