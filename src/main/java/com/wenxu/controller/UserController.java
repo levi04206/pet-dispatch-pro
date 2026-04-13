@@ -25,6 +25,9 @@ public class UserController {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
+    @Resource
+    private JwtUtils jwtUtils;
+
     /**
      * 发送手机验证码并存入 Redis
      */
@@ -86,7 +89,7 @@ public class UserController {
         claims.put("phone", user.getPhone());
 
         // 生成令牌
-        String token = JwtUtils.createToken(claims);
+        String token = jwtUtils.createToken(claims);
 
         // 4. 返回 Token 给前端
         // 以后前端会把这个字符串存在本地（比如 LocalStorage），每次请求都放在 Header 里传过来

@@ -34,3 +34,4 @@ build/
 
 # 忽略本地开发环境配置文件
 application-local.yml
+src/main/resources/application-local.yml

@@ -12,16 +12,16 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     # ????? url ????????????? pet_dispatch_pro ?????????????
-    url: jdbc:mysql://localhost:3306/pet_dispatch_pro?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
-    username: root
-    password: '0206'
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/pet_dispatch_pro?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
 
   # Redis ???? (???? LBS ??????????)
   data:
     redis:
-      host: 127.0.0.1
-      port: 6379
-#      password: 123456
+      host: ${SPRING_DATA_REDIS_HOST:127.0.0.1}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      password: ${SPRING_DATA_REDIS_PASSWORD:}
 
 # MyBatis-Plus ???? (?????)
 mybatis-plus:
@@ -36,6 +36,9 @@ mybatis-plus:
       id-type: auto
 
 wenxu:
+  jwt:
+    sign-key: ${WENXU_JWT_SIGN_KEY:change-me-in-application-local}
+    expire-time: ${WENXU_JWT_EXPIRE_TIME:604800000}
   alioss:
     # 使用占位符，动态读取隐藏环境中的值。冒号后面是防止报错的默认提示语。
     endpoint: ${wenxu.alioss.endpoint:}

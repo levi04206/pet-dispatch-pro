@@ -3,6 +3,7 @@ package com.wenxu.interceptor;
 import com.wenxu.common.BaseContext;
 import com.wenxu.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
@@ -11,11 +12,14 @@ import org.springframework.web.servlet.HandlerInterceptor;
 @Component
 public class LoginInterceptor implements HandlerInterceptor {
 
+    @Resource
+    private JwtUtils jwtUtils;
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String token = request.getHeader("token");
         try {
-            Claims claims = JwtUtils.parseToken(token);
+            Claims claims = jwtUtils.parseToken(token);
             Long userId = Long.valueOf(claims.get("userId").toString());
 
             // 🚨 核心改动：把 userId 存入当前线程的口袋！
