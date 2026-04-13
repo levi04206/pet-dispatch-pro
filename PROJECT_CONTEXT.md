@@ -9,6 +9,7 @@
 - 已完成宠托师模块雏形：用户申请成为宠托师、管理员审核宠托师。
 - 正在开发订单模块：创建订单、模拟支付、公共订单池、宠托师抢单、开始服务、完成服务。
 - 第一轮急救修复已完成：宠物删除水平越权、抢单时 User.id 和 Sitter.id 混用。
+- 第二阶段基建推进中：已引入 DTO、Spring Validation、MapStruct，先覆盖宠物新增、宠托师申请、订单创建三个写接口。
 
 ## 技术栈
 
@@ -21,6 +22,8 @@
 - Hutool
 - Lombok
 - 阿里云 OSS
+- MapStruct
+- Spring Validation
 
 ## 当前数据库
 
@@ -31,7 +34,7 @@
 
 ## 下一步目标
 
-- 第二阶段引入 DTO/VO、Spring Validation、MapStruct，建立清晰的数据入参和返回边界。
+- 继续扩大 DTO/VO、Spring Validation、MapStruct 覆盖范围，逐步替换 Controller 直接接收 Entity 的接口。
 - 第三阶段重构 Service 层，把 Controller 中的业务逻辑迁移到 `XxxServiceImpl`。
 - 第四阶段加强权限与安全：引入 Sa-Token、区分用户/宠托师/管理员权限、外置密钥和本地配置。
 - 第五阶段完善交付标准：整理 `docs/schema.sql` 或接入 Flyway，补充越权删除和并发抢单测试。

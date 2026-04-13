@@ -3,9 +3,12 @@ package com.wenxu.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wenxu.common.BaseContext;
 import com.wenxu.common.Result;
+import com.wenxu.converter.PetInfoConverter;
+import com.wenxu.dto.PetInfoAddDTO;
 import com.wenxu.entity.PetInfo;
 import com.wenxu.mapper.PetInfoMapper;
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -18,13 +21,17 @@ public class PetInfoController {
     @Resource
     private PetInfoMapper petInfoMapper;
 
+    @Resource
+    private PetInfoConverter petInfoConverter;
+
     /**
      * 添加宠物档案
      */
     @PostMapping("/add")
-    public Result<String> addPet(@RequestBody PetInfo petInfo) {
+    public Result<String> addPet(@Valid @RequestBody PetInfoAddDTO petInfoAddDTO) {
         // 🚨 极客操作：从 ThreadLocal 口袋里直接拿当前登录人的 ID
         Long userId = BaseContext.getCurrentId();
+        PetInfo petInfo = petInfoConverter.toEntity(petInfoAddDTO);
         petInfo.setUserId(userId);
         petInfo.setCreateTime(LocalDateTime.now());
 

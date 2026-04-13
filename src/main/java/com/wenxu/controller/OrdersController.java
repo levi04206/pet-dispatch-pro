@@ -6,11 +6,14 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.wenxu.common.BaseContext;
 import com.wenxu.common.OrderStatusEnum;
 import com.wenxu.common.Result;
+import com.wenxu.converter.OrderConverter;
+import com.wenxu.dto.OrderCreateDTO;
 import com.wenxu.entity.Orders;
 import com.wenxu.entity.Sitter;
 import com.wenxu.mapper.OrdersMapper;
 import com.wenxu.mapper.SitterMapper;
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -29,14 +32,18 @@ public class OrdersController {
     @Resource
     private SitterMapper sitterMapper;
 
+    @Resource
+    private OrderConverter orderConverter;
+
     /**
      * 第一步：用户发起预约下单
      */
     @PostMapping("/create")
-    public Result<Orders> createOrder(@RequestBody Orders orders) {
+    public Result<Orders> createOrder(@Valid @RequestBody OrderCreateDTO orderCreateDTO) {
 
         // 1. 从 ThreadLocal 口袋里掏出当前下单的大佬是谁
         Long userId = BaseContext.getCurrentId();
+        Orders orders = orderConverter.toEntity(orderCreateDTO);
         orders.setUserId(userId);
 
         // 2. 🚨 核心黑科技：生成全局唯一的订单流水号
@@ -53,6 +60,8 @@ public class OrdersController {
         if (orders.getTotalAmount() == null) {
             orders.setTotalAmount(new BigDecimal("99.00"));
             orders.setPayAmount(new BigDecimal("99.00"));
+        } else {
+            orders.setPayAmount(orders.getTotalAmount());
         }
 
         // 设置一下预估距离

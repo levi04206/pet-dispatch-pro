@@ -3,10 +3,13 @@ package com.wenxu.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wenxu.common.Result;
 import com.wenxu.common.BaseContext;
+import com.wenxu.converter.SitterConverter;
+import com.wenxu.dto.SitterApplyDTO;
 import com.wenxu.entity.Sitter;
 import com.wenxu.mapper.SitterMapper;
 import org.springframework.web.bind.annotation.*;
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/sitter")
@@ -15,11 +18,14 @@ public class SitterController {
     @Resource
     private SitterMapper sitterInfoMapper;
 
+    @Resource
+    private SitterConverter sitterConverter;
+
     /**
      * 提交宠托师入驻申请
      */
     @PostMapping("/apply")
-    public Result<String> applySitter(@RequestBody Sitter sitter) {
+    public Result<String> applySitter(@Valid @RequestBody SitterApplyDTO sitterApplyDTO) {
         Long currentUserId = BaseContext.getCurrentId();
 
         // 1. 幂等性校验：检查是不是已经申请过了
@@ -31,6 +37,7 @@ public class SitterController {
         }
 
         // 2. 补全系统字段
+        Sitter sitter = sitterConverter.toEntity(sitterApplyDTO);
         sitter.setUserId(currentUserId);
         //  状态分离，各司其职
         sitter.setAuditStatus(0); // 审核状态：0待审核
