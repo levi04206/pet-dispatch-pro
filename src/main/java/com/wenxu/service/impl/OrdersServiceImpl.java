@@ -39,6 +39,7 @@ public class OrdersServiceImpl implements OrdersService {
         orders.setUserId(userId);
         orders.setOrderSn("OD" + IdUtil.getSnowflakeNextIdStr());
         orders.setStatus(OrderStatusEnum.PENDING_PAYMENT.getStatus());
+        orders.setVersion(0);
 
         if (orders.getTotalAmount() == null) {
             orders.setTotalAmount(new BigDecimal("99.00"));
@@ -88,7 +89,8 @@ public class OrdersServiceImpl implements OrdersService {
                 .eq(Orders::getStatus, OrderStatusEnum.PENDING_ACCEPT.getStatus())
                 .set(Orders::getStatus, OrderStatusEnum.ACCEPTED.getStatus())
                 .set(Orders::getSitterId, sitter.getId())
-                .set(Orders::getAcceptTime, LocalDateTime.now());
+                .set(Orders::getAcceptTime, LocalDateTime.now())
+                .setSql("version = version + 1");
         return ordersMapper.update(null, updateWrapper) > 0;
     }
 
@@ -105,7 +107,8 @@ public class OrdersServiceImpl implements OrdersService {
                 .eq(Orders::getStatus, OrderStatusEnum.ACCEPTED.getStatus())
                 .set(Orders::getStatus, OrderStatusEnum.IN_SERVICE.getStatus())
                 .set(Orders::getStartTime, LocalDateTime.now())
-                .set(Orders::getStartProof, picUrl);
+                .set(Orders::getStartProof, picUrl)
+                .setSql("version = version + 1");
         return ordersMapper.update(null, updateWrapper) > 0;
     }
 
@@ -122,7 +125,8 @@ public class OrdersServiceImpl implements OrdersService {
                 .eq(Orders::getStatus, OrderStatusEnum.IN_SERVICE.getStatus())
                 .set(Orders::getStatus, OrderStatusEnum.COMPLETED.getStatus())
                 .set(Orders::getEndTime, LocalDateTime.now())
-                .set(Orders::getEndProof, picUrl);
+                .set(Orders::getEndProof, picUrl)
+                .setSql("version = version + 1");
         return ordersMapper.update(null, updateWrapper) > 0;
     }
 

@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS `orders` (
     `pay_amount` decimal(10,2) NOT NULL COMMENT '实付金额',
     `distance` decimal(10,2) DEFAULT NULL COMMENT '预估/实际服务距离(km)',
     `status` tinyint NOT NULL DEFAULT '1' COMMENT '订单状态: 1待支付 2待接单 3已接单(前往中) 4服务中 5服务完成 6已评价 0已取消',
+    `version` int NOT NULL DEFAULT '0' COMMENT '乐观锁版本号',
     `start_proof` varchar(255) DEFAULT NULL COMMENT '开始服务图片凭证(OSS URL)',
     `end_proof` varchar(255) DEFAULT NULL COMMENT '结束服务视频/图片凭证(OSS URL)',
     `reserve_time` datetime NOT NULL COMMENT '用户预约上门时间',
