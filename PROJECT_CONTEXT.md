@@ -11,6 +11,7 @@
 - 第一轮急救修复已完成：宠物删除水平越权、抢单时 User.id 和 Sitter.id 混用。
 - 第二阶段基建推进中：已引入 DTO、Spring Validation、MapStruct，先覆盖宠物新增、宠托师申请、订单创建三个写接口。
 - 配置与交付基建推进中：已外置数据库、Redis、JWT 配置，新增本地配置示例和 `docs/schema.sql`。
+- 第三阶段 Service 层重构已启动：宠物模块已从 Controller 直连 Mapper 调整为 Controller -> Service -> Mapper。
 
 ## 技术栈
 
@@ -37,6 +38,6 @@
 ## 下一步目标
 
 - 继续扩大 DTO/VO、Spring Validation、MapStruct 覆盖范围，逐步替换 Controller 直接接收 Entity 的接口。
-- 第三阶段重构 Service 层，把 Controller 中的业务逻辑迁移到 `XxxServiceImpl`。
+- 继续推进 Service 层重构，下一步优先迁移宠托师申请/审核与订单状态流转逻辑。
 - 第四阶段加强权限与安全：引入 Sa-Token、区分用户/宠托师/管理员权限、外置密钥和本地配置。
 - 第五阶段完善交付标准：后续可在 `docs/schema.sql` 基础上接入 Flyway，补充越权删除和并发抢单测试。

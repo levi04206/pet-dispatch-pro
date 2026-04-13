@@ -1,17 +1,20 @@
 package com.wenxu.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wenxu.common.BaseContext;
 import com.wenxu.common.Result;
-import com.wenxu.converter.PetInfoConverter;
 import com.wenxu.dto.PetInfoAddDTO;
 import com.wenxu.entity.PetInfo;
-import com.wenxu.mapper.PetInfoMapper;
+import com.wenxu.service.PetInfoService;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -19,55 +22,28 @@ import java.util.List;
 public class PetInfoController {
 
     @Resource
-    private PetInfoMapper petInfoMapper;
+    private PetInfoService petInfoService;
 
-    @Resource
-    private PetInfoConverter petInfoConverter;
-
-    /**
-     * 添加宠物档案
-     */
     @PostMapping("/add")
     public Result<String> addPet(@Valid @RequestBody PetInfoAddDTO petInfoAddDTO) {
-        // 🚨 极客操作：从 ThreadLocal 口袋里直接拿当前登录人的 ID
         Long userId = BaseContext.getCurrentId();
-        PetInfo petInfo = petInfoConverter.toEntity(petInfoAddDTO);
-        petInfo.setUserId(userId);
-        petInfo.setCreateTime(LocalDateTime.now());
-
-        petInfoMapper.insert(petInfo);
+        petInfoService.addPet(petInfoAddDTO, userId);
         return Result.success("添加宠物成功");
     }
 
-    /**
-     * 查询当前登录用户的所有宠物
-     */
     @GetMapping("/list")
     public Result<List<PetInfo>> listMyPets() {
         Long userId = BaseContext.getCurrentId();
-
-        // 构造条件：查询 userId 等于当前登录人 ID 的宠物
-        LambdaQueryWrapper<PetInfo> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(PetInfo::getUserId, userId);
-
-        List<PetInfo> list = petInfoMapper.selectList(queryWrapper);
+        List<PetInfo> list = petInfoService.listMyPets(userId);
         return Result.success(list);
     }
 
-    /**
-     * 根据ID删除宠物
-     */
     @DeleteMapping("/{id}")
     public Result<String> deletePet(@PathVariable Long id) {
         Long userId = BaseContext.getCurrentId();
-
-        LambdaQueryWrapper<PetInfo> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(PetInfo::getId, id)
-                .eq(PetInfo::getUserId, userId);
-
-        int count = petInfoMapper.delete(queryWrapper);
-        if (count == 0) {
-            return Result.error("Pet not found or no permission to delete");
+        boolean deleted = petInfoService.deleteMyPet(id, userId);
+        if (!deleted) {
+            return Result.error("宠物不存在或无权删除");
         }
         return Result.success("删除成功");
     }
