@@ -7,7 +7,9 @@ import com.wenxu.common.BaseContext;
 import com.wenxu.common.OrderStatusEnum;
 import com.wenxu.common.Result;
 import com.wenxu.entity.Orders;
+import com.wenxu.entity.Sitter;
 import com.wenxu.mapper.OrdersMapper;
+import com.wenxu.mapper.SitterMapper;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,8 +20,14 @@ import java.time.LocalDateTime;
 @RequestMapping("/api/orders")
 public class OrdersController {
 
+    private static final int SITTER_AUDIT_APPROVED = 1;
+    private static final int SITTER_WORK_ACCEPTING = 1;
+
     @Resource
     private OrdersMapper ordersMapper;
+
+    @Resource
+    private SitterMapper sitterMapper;
 
     /**
      * 第一步：用户发起预约下单
@@ -118,7 +126,11 @@ public class OrdersController {
     public Result<String> grabOrder(@RequestParam Long orderId) {
 
         // 1. 掏出口袋，看看是哪位宠托师在抢单
-        Long sitterId = BaseContext.getCurrentId();
+        Sitter sitter = getCurrentAvailableSitter();
+        if (sitter == null) {
+            return Result.error("Please apply as an approved sitter and switch to accepting status first");
+        }
+        Long sitterId = sitter.getId();
 
         // 2. 🚨 核心黑科技：乐观锁抢单 (防止两个人同时抢到同一单)
         // 对应的 SQL 逻辑是：
@@ -150,7 +162,11 @@ public class OrdersController {
      */
     @PostMapping("/start")
     public Result<String> startService(@RequestParam Long orderId, @RequestParam String picUrl) {
-        Long sitterId = BaseContext.getCurrentId();
+        Sitter sitter = getCurrentSitter();
+        if (sitter == null) {
+            return Result.error("Please apply as a sitter first");
+        }
+        Long sitterId = sitter.getId();
 
         LambdaUpdateWrapper<Orders> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Orders::getId, orderId)
@@ -169,7 +185,11 @@ public class OrdersController {
      */
     @PostMapping("/complete")
     public Result<String> completeService(@RequestParam Long orderId, @RequestParam String picUrl) {
-        Long sitterId = BaseContext.getCurrentId();
+        Sitter sitter = getCurrentSitter();
+        if (sitter == null) {
+            return Result.error("Please apply as a sitter first");
+        }
+        Long sitterId = sitter.getId();
 
         LambdaUpdateWrapper<Orders> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Orders::getId, orderId)
@@ -181,6 +201,26 @@ public class OrdersController {
 
         int count = ordersMapper.update(null, updateWrapper);
         return count > 0 ? Result.success("辛苦了！服务已圆满完成。") : Result.error("操作失败！");
+    }
+
+    private Sitter getCurrentSitter() {
+        Long userId = BaseContext.getCurrentId();
+        return sitterMapper.selectOne(new LambdaQueryWrapper<Sitter>()
+                .eq(Sitter::getUserId, userId));
+    }
+
+    private Sitter getCurrentAvailableSitter() {
+        Sitter sitter = getCurrentSitter();
+        if (sitter == null) {
+            return null;
+        }
+        if (!Integer.valueOf(SITTER_AUDIT_APPROVED).equals(sitter.getAuditStatus())) {
+            return null;
+        }
+        if (!Integer.valueOf(SITTER_WORK_ACCEPTING).equals(sitter.getWorkStatus())) {
+            return null;
+        }
+        return sitter;
     }
 
 
