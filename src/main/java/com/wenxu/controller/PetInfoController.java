@@ -52,7 +52,16 @@ public class PetInfoController {
      */
     @DeleteMapping("/{id}")
     public Result<String> deletePet(@PathVariable Long id) {
-        petInfoMapper.deleteById(id);
+        Long userId = BaseContext.getCurrentId();
+
+        LambdaQueryWrapper<PetInfo> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(PetInfo::getId, id)
+                .eq(PetInfo::getUserId, userId);
+
+        int count = petInfoMapper.delete(queryWrapper);
+        if (count == 0) {
+            return Result.error("Pet not found or no permission to delete");
+        }
         return Result.success("删除成功");
     }
 }
