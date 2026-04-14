@@ -35,6 +35,7 @@
 - `docs/schema.sql`
 - `docs/migrations/`
 - `docs/demo-data.sql` 提供少量演示数据，可用于本地串核心流程。
+- `docs/demo-flow.md` 提供核心业务演示步骤。
 
 ## 常用接口
 
