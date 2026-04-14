@@ -16,9 +16,12 @@ public class OrderVO {
     private BigDecimal payAmount;
     private BigDecimal distance;
     private Integer status;
+    private Integer evaluateRating;
+    private String evaluateContent;
     private LocalDateTime reserveTime;
     private LocalDateTime payTime;
     private LocalDateTime acceptTime;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private LocalDateTime evaluateTime;
 }

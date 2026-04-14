@@ -36,12 +36,15 @@ public class Orders implements Serializable {
 
     private String startProof;
     private String endProof;
+    private Integer evaluateRating;
+    private String evaluateContent;
 
     private LocalDateTime reserveTime;
     private LocalDateTime payTime;
     private LocalDateTime acceptTime;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private LocalDateTime evaluateTime;
 
     private LocalDateTime createTime;
     private LocalDateTime updateTime;

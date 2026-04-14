@@ -1,6 +1,7 @@
 package com.wenxu.service;
 
 import com.wenxu.dto.OrderCreateDTO;
+import com.wenxu.dto.OrderEvaluateDTO;
 import com.wenxu.entity.Orders;
 
 import java.util.List;
@@ -18,6 +19,8 @@ public interface OrdersService {
     List<Orders> listMyServiceOrders(Long userId);
 
     boolean cancelOrder(Long orderId, Long userId);
+
+    boolean evaluateOrder(OrderEvaluateDTO orderEvaluateDTO, Long userId);
 
     boolean grabOrder(Long orderId, Long userId);
 

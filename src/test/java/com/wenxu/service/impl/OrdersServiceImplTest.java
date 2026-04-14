@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.wenxu.common.OrderStatusEnum;
 import com.wenxu.converter.OrderConverter;
 import com.wenxu.dto.OrderCreateDTO;
+import com.wenxu.dto.OrderEvaluateDTO;
 import com.wenxu.entity.Orders;
 import com.wenxu.entity.Sitter;
 import com.wenxu.mapper.OrdersMapper;
@@ -166,6 +167,41 @@ class OrdersServiceImplTest {
         boolean canceled = ordersService.cancelOrder(20L, 100L);
 
         assertFalse(canceled);
+    }
+
+    @Test
+    void evaluateOrderShouldScopeByOwnerAndCompletedStatus() {
+        OrderEvaluateDTO dto = new OrderEvaluateDTO();
+        dto.setOrderId(20L);
+        dto.setRating(5);
+        dto.setContent("服务很好");
+        when(ordersMapper.update(any(), any())).thenReturn(1);
+
+        boolean evaluated = ordersService.evaluateOrder(dto, 100L);
+
+        assertTrue(evaluated);
+        LambdaUpdateWrapper<Orders> wrapper = captureOrderUpdateWrapper();
+        Assertions.assertAll(
+                () -> assertTrue(wrapper.getSqlSegment().contains("id")),
+                () -> assertTrue(wrapper.getSqlSegment().contains("user_id")),
+                () -> assertTrue(wrapper.getSqlSegment().contains("status")),
+                () -> assertTrue(wrapper.getSqlSet().contains("evaluate_rating")),
+                () -> assertTrue(wrapper.getSqlSet().contains("evaluate_content")),
+                () -> assertTrue(wrapper.getSqlSet().contains("evaluate_time")),
+                () -> assertTrue(wrapper.getSqlSet().contains("version = version + 1"))
+        );
+    }
+
+    @Test
+    void evaluateOrderShouldReturnFalseWhenUpdateMisses() {
+        OrderEvaluateDTO dto = new OrderEvaluateDTO();
+        dto.setOrderId(20L);
+        dto.setRating(5);
+        when(ordersMapper.update(any(), any())).thenReturn(0);
+
+        boolean evaluated = ordersService.evaluateOrder(dto, 100L);
+
+        assertFalse(evaluated);
     }
 
     @Test

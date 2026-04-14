@@ -4,6 +4,7 @@ import com.wenxu.common.BaseContext;
 import com.wenxu.common.Result;
 import com.wenxu.converter.OrderConverter;
 import com.wenxu.dto.OrderCreateDTO;
+import com.wenxu.dto.OrderEvaluateDTO;
 import com.wenxu.entity.Orders;
 import com.wenxu.service.OrdersService;
 import com.wenxu.vo.OrderVO;
@@ -63,6 +64,13 @@ public class OrdersController {
         Long userId = BaseContext.getCurrentId();
         boolean canceled = ordersService.cancelOrder(orderId, userId);
         return canceled ? Result.success("订单已取消") : Result.error("取消失败，订单不存在、无权操作或当前状态不可取消");
+    }
+
+    @PostMapping("/evaluate")
+    public Result<String> evaluateOrder(@Valid @RequestBody OrderEvaluateDTO orderEvaluateDTO) {
+        Long userId = BaseContext.getCurrentId();
+        boolean evaluated = ordersService.evaluateOrder(orderEvaluateDTO, userId);
+        return evaluated ? Result.success("评价成功") : Result.error("评价失败，订单不存在、无权操作或当前状态不可评价");
     }
 
     @PostMapping("/grab")

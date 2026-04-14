@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.wenxu.common.OrderStatusEnum;
 import com.wenxu.converter.OrderConverter;
 import com.wenxu.dto.OrderCreateDTO;
+import com.wenxu.dto.OrderEvaluateDTO;
 import com.wenxu.entity.Orders;
 import com.wenxu.entity.PetInfo;
 import com.wenxu.entity.Sitter;
@@ -117,6 +118,20 @@ public class OrdersServiceImpl implements OrdersService {
                         OrderStatusEnum.PENDING_PAYMENT.getStatus(),
                         OrderStatusEnum.PENDING_ACCEPT.getStatus())
                 .set(Orders::getStatus, OrderStatusEnum.CANCELED.getStatus())
+                .setSql("version = version + 1");
+        return ordersMapper.update(null, updateWrapper) > 0;
+    }
+
+    @Override
+    public boolean evaluateOrder(OrderEvaluateDTO orderEvaluateDTO, Long userId) {
+        LambdaUpdateWrapper<Orders> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Orders::getId, orderEvaluateDTO.getOrderId())
+                .eq(Orders::getUserId, userId)
+                .eq(Orders::getStatus, OrderStatusEnum.COMPLETED.getStatus())
+                .set(Orders::getStatus, OrderStatusEnum.EVALUATED.getStatus())
+                .set(Orders::getEvaluateRating, orderEvaluateDTO.getRating())
+                .set(Orders::getEvaluateContent, orderEvaluateDTO.getContent())
+                .set(Orders::getEvaluateTime, LocalDateTime.now())
                 .setSql("version = version + 1");
         return ordersMapper.update(null, updateWrapper) > 0;
     }
