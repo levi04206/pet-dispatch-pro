@@ -67,6 +67,18 @@ class OrdersControllerTest {
     }
 
     @Test
+    void payOrderShouldUseCurrentUser() throws Exception {
+        when(ordersService.payOrder("OD1001", 100L)).thenReturn(true);
+
+        mockMvc.perform(post("/api/orders/pay").param("orderSn", "OD1001"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1))
+                .andExpect(jsonPath("$.data").value("支付成功，订单已进入待接单状态"));
+
+        verify(ordersService).payOrder("OD1001", 100L);
+    }
+
+    @Test
     void completeServiceShouldAcceptProofBody() throws Exception {
         when(ordersService.completeService(20L, "https://example.com/end.jpg", 100L)).thenReturn(true);
 

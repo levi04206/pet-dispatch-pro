@@ -70,9 +70,10 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
-    public boolean payOrder(String orderSn) {
+    public boolean payOrder(String orderSn, Long userId) {
         Orders order = ordersMapper.selectOne(new LambdaQueryWrapper<Orders>()
-                .eq(Orders::getOrderSn, orderSn));
+                .eq(Orders::getOrderSn, orderSn)
+                .eq(Orders::getUserId, userId));
         if (order == null || !OrderStatusEnum.PENDING_PAYMENT.getStatus().equals(order.getStatus())) {
             return false;
         }

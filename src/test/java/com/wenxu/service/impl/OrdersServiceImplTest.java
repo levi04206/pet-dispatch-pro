@@ -94,7 +94,7 @@ class OrdersServiceImplTest {
         when(ordersMapper.selectOne(any())).thenReturn(order);
         when(ordersMapper.updateById(order)).thenReturn(1);
 
-        boolean paid = ordersService.payOrder("OD1001");
+        boolean paid = ordersService.payOrder("OD1001", 100L);
 
         assertTrue(paid);
         assertEquals(OrderStatusEnum.PENDING_ACCEPT.getStatus(), order.getStatus());

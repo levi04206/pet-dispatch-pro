@@ -10,7 +10,7 @@ public interface OrdersService {
 
     Orders createOrder(OrderCreateDTO orderCreateDTO, Long userId);
 
-    boolean payOrder(String orderSn);
+    boolean payOrder(String orderSn, Long userId);
 
     List<Orders> getPublicPool();
 

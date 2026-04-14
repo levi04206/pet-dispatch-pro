@@ -40,7 +40,8 @@ public class OrdersController {
 
     @PostMapping("/pay")
     public Result<String> payOrder(@RequestParam String orderSn) {
-        boolean paid = ordersService.payOrder(orderSn);
+        Long userId = BaseContext.getCurrentId();
+        boolean paid = ordersService.payOrder(orderSn, userId);
         return paid ? Result.success("支付成功，订单已进入待接单状态") : Result.error("订单不存在或状态异常，无法支付");
     }
 
