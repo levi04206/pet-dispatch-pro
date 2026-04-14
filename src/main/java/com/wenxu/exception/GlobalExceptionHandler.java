@@ -31,4 +31,9 @@ public class GlobalExceptionHandler {
     public Result<String> handleIllegalArgument(IllegalArgumentException ex) {
         return Result.error(ex.getMessage());
     }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public Result<String> handleIllegalState(IllegalStateException ex) {
+        return Result.error(ex.getMessage());
+    }
 }

@@ -177,7 +177,10 @@ public class OrdersServiceImpl implements OrdersService {
             return false;
         }
 
-        return updateSitterWorkStatus(sitter.getId(), SITTER_WORK_SERVING);
+        if (!updateSitterWorkStatus(sitter.getId(), SITTER_WORK_SERVING)) {
+            throw new IllegalStateException("宠托师工作状态更新失败");
+        }
+        return true;
     }
 
     @Override
@@ -222,7 +225,10 @@ public class OrdersServiceImpl implements OrdersService {
         sitterUpdateWrapper.eq(Sitter::getId, sitter.getId())
                 .set(Sitter::getWorkStatus, SITTER_WORK_ACCEPTING)
                 .setSql("order_count = order_count + 1");
-        return sitterMapper.update(null, sitterUpdateWrapper) > 0;
+        if (sitterMapper.update(null, sitterUpdateWrapper) <= 0) {
+            throw new IllegalStateException("宠托师履约统计更新失败");
+        }
+        return true;
     }
 
     private Sitter getAvailableSitter(Long userId) {

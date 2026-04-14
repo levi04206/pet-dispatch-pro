@@ -56,6 +56,9 @@ public class SitterServiceImpl implements SitterService {
         if (sitter == null) {
             return false;
         }
+        if (!Integer.valueOf(AUDIT_PENDING).equals(sitter.getAuditStatus())) {
+            return false;
+        }
 
         LambdaUpdateWrapper<Sitter> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Sitter::getId, id)

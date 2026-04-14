@@ -74,6 +74,7 @@ class SitterServiceImplTest {
         Sitter sitter = new Sitter();
         sitter.setId(10L);
         sitter.setUserId(100L);
+        sitter.setAuditStatus(0);
 
         when(sitterMapper.selectById(10L)).thenReturn(sitter);
         when(sitterMapper.update(any(), any())).thenReturn(1);
@@ -90,6 +91,7 @@ class SitterServiceImplTest {
         Sitter sitter = new Sitter();
         sitter.setId(10L);
         sitter.setUserId(100L);
+        sitter.setAuditStatus(0);
 
         when(sitterMapper.selectById(10L)).thenReturn(sitter);
         when(sitterMapper.update(any(), any())).thenReturn(1);
@@ -106,6 +108,22 @@ class SitterServiceImplTest {
         when(sitterMapper.selectById(10L)).thenReturn(null);
 
         boolean audited = sitterService.auditSitter(10L, 1);
+
+        assertFalse(audited);
+        verify(sitterMapper, never()).update(any(), any());
+        verify(userMapper, never()).updateById(any());
+    }
+
+    @Test
+    void auditSitterShouldRejectAlreadyAuditedProfile() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setUserId(100L);
+        sitter.setAuditStatus(1);
+
+        when(sitterMapper.selectById(10L)).thenReturn(sitter);
+
+        boolean audited = sitterService.auditSitter(10L, 2);
 
         assertFalse(audited);
         verify(sitterMapper, never()).update(any(), any());
