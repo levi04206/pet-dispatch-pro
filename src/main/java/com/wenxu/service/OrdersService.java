@@ -13,6 +13,10 @@ public interface OrdersService {
 
     List<Orders> getPublicPool();
 
+    List<Orders> listMyOrders(Long userId);
+
+    List<Orders> listMyServiceOrders(Long userId);
+
     boolean grabOrder(Long orderId, Long userId);
 
     boolean startService(Long orderId, String picUrl, Long userId);

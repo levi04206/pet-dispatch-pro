@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -96,6 +97,49 @@ class OrdersServiceImplTest {
         assertEquals(OrderStatusEnum.PENDING_ACCEPT.getStatus(), order.getStatus());
         assertNotNull(order.getPayTime());
         verify(ordersMapper).updateById(order);
+    }
+
+    @Test
+    void listMyOrdersShouldScopeQueryByCurrentUser() {
+        Orders order = new Orders();
+        order.setId(20L);
+        when(ordersMapper.selectList(any())).thenReturn(List.of(order));
+
+        List<Orders> orders = ordersService.listMyOrders(100L);
+
+        assertEquals(List.of(order), orders);
+        verify(ordersMapper).selectList(any());
+    }
+
+    @Test
+    void listMyServiceOrdersShouldScopeQueryByApprovedSitter() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setAuditStatus(1);
+        Orders order = new Orders();
+        order.setId(20L);
+
+        when(sitterMapper.selectOne(any())).thenReturn(sitter);
+        when(ordersMapper.selectList(any())).thenReturn(List.of(order));
+
+        List<Orders> orders = ordersService.listMyServiceOrders(100L);
+
+        assertEquals(List.of(order), orders);
+        verify(ordersMapper).selectList(any());
+    }
+
+    @Test
+    void listMyServiceOrdersShouldReturnEmptyWhenCurrentUserIsNotApprovedSitter() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setAuditStatus(0);
+
+        when(sitterMapper.selectOne(any())).thenReturn(sitter);
+
+        List<Orders> orders = ordersService.listMyServiceOrders(100L);
+
+        assertTrue(orders.isEmpty());
+        verify(ordersMapper, never()).selectList(any());
     }
 
     @Test

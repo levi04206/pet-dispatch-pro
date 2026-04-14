@@ -46,6 +46,18 @@ public class OrdersController {
         return Result.success(orderConverter.toVOList(ordersService.getPublicPool()));
     }
 
+    @GetMapping("/my")
+    public Result<List<OrderVO>> listMyOrders() {
+        Long userId = BaseContext.getCurrentId();
+        return Result.success(orderConverter.toVOList(ordersService.listMyOrders(userId)));
+    }
+
+    @GetMapping("/sitter/my")
+    public Result<List<OrderVO>> listMyServiceOrders() {
+        Long userId = BaseContext.getCurrentId();
+        return Result.success(orderConverter.toVOList(ordersService.listMyServiceOrders(userId)));
+    }
+
     @PostMapping("/grab")
     public Result<String> grabOrder(@RequestParam Long orderId) {
         Long userId = BaseContext.getCurrentId();

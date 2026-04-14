@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -83,6 +84,27 @@ public class OrdersServiceImpl implements OrdersService {
         LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Orders::getStatus, OrderStatusEnum.PENDING_ACCEPT.getStatus());
         queryWrapper.orderByDesc(Orders::getCreateTime);
+        return ordersMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public List<Orders> listMyOrders(Long userId) {
+        LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Orders::getUserId, userId);
+        queryWrapper.orderByDesc(Orders::getCreateTime);
+        return ordersMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public List<Orders> listMyServiceOrders(Long userId) {
+        Sitter sitter = getApprovedSitter(userId);
+        if (sitter == null) {
+            return Collections.emptyList();
+        }
+
+        LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Orders::getSitterId, sitter.getId());
+        queryWrapper.orderByDesc(Orders::getAcceptTime);
         return ordersMapper.selectList(queryWrapper);
     }
 
