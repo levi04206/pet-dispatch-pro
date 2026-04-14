@@ -58,6 +58,13 @@ public class OrdersController {
         return Result.success(orderConverter.toVOList(ordersService.listMyServiceOrders(userId)));
     }
 
+    @PostMapping("/cancel")
+    public Result<String> cancelOrder(@RequestParam Long orderId) {
+        Long userId = BaseContext.getCurrentId();
+        boolean canceled = ordersService.cancelOrder(orderId, userId);
+        return canceled ? Result.success("订单已取消") : Result.error("取消失败，订单不存在、无权操作或当前状态不可取消");
+    }
+
     @PostMapping("/grab")
     public Result<String> grabOrder(@RequestParam Long orderId) {
         Long userId = BaseContext.getCurrentId();

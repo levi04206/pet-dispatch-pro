@@ -143,6 +143,32 @@ class OrdersServiceImplTest {
     }
 
     @Test
+    void cancelOrderShouldScopeByOrderOwnerAndCancellableStatus() {
+        when(ordersMapper.update(any(), any())).thenReturn(1);
+
+        boolean canceled = ordersService.cancelOrder(20L, 100L);
+
+        assertTrue(canceled);
+        LambdaUpdateWrapper<Orders> wrapper = captureOrderUpdateWrapper();
+        Assertions.assertAll(
+                () -> assertTrue(wrapper.getSqlSegment().contains("id")),
+                () -> assertTrue(wrapper.getSqlSegment().contains("user_id")),
+                () -> assertTrue(wrapper.getSqlSegment().contains("status")),
+                () -> assertTrue(wrapper.getSqlSet().contains("status")),
+                () -> assertTrue(wrapper.getSqlSet().contains("version = version + 1"))
+        );
+    }
+
+    @Test
+    void cancelOrderShouldReturnFalseWhenUpdateMisses() {
+        when(ordersMapper.update(any(), any())).thenReturn(0);
+
+        boolean canceled = ordersService.cancelOrder(20L, 100L);
+
+        assertFalse(canceled);
+    }
+
+    @Test
     void grabOrderShouldBindApprovedAcceptingSitter() {
         Sitter sitter = new Sitter();
         sitter.setId(10L);

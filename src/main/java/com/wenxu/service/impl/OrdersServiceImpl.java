@@ -109,6 +109,19 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
+    public boolean cancelOrder(Long orderId, Long userId) {
+        LambdaUpdateWrapper<Orders> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Orders::getId, orderId)
+                .eq(Orders::getUserId, userId)
+                .in(Orders::getStatus,
+                        OrderStatusEnum.PENDING_PAYMENT.getStatus(),
+                        OrderStatusEnum.PENDING_ACCEPT.getStatus())
+                .set(Orders::getStatus, OrderStatusEnum.CANCELED.getStatus())
+                .setSql("version = version + 1");
+        return ordersMapper.update(null, updateWrapper) > 0;
+    }
+
+    @Override
     public boolean grabOrder(Long orderId, Long userId) {
         Sitter sitter = getAvailableSitter(userId);
         if (sitter == null) {

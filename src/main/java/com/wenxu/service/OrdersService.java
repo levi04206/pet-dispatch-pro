@@ -17,6 +17,8 @@ public interface OrdersService {
 
     List<Orders> listMyServiceOrders(Long userId);
 
+    boolean cancelOrder(Long orderId, Long userId);
+
     boolean grabOrder(Long orderId, Long userId);
 
     boolean startService(Long orderId, String picUrl, Long userId);
