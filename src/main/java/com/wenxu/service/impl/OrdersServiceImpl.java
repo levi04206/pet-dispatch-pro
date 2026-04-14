@@ -7,8 +7,10 @@ import com.wenxu.common.OrderStatusEnum;
 import com.wenxu.converter.OrderConverter;
 import com.wenxu.dto.OrderCreateDTO;
 import com.wenxu.entity.Orders;
+import com.wenxu.entity.PetInfo;
 import com.wenxu.entity.Sitter;
 import com.wenxu.mapper.OrdersMapper;
+import com.wenxu.mapper.PetInfoMapper;
 import com.wenxu.mapper.SitterMapper;
 import com.wenxu.service.OrdersService;
 import jakarta.annotation.Resource;
@@ -31,10 +33,17 @@ public class OrdersServiceImpl implements OrdersService {
     private SitterMapper sitterMapper;
 
     @Resource
+    private PetInfoMapper petInfoMapper;
+
+    @Resource
     private OrderConverter orderConverter;
 
     @Override
     public Orders createOrder(OrderCreateDTO orderCreateDTO, Long userId) {
+        if (!isMyPet(orderCreateDTO.getPetId(), userId)) {
+            throw new IllegalArgumentException("宠物不存在或无权下单");
+        }
+
         Orders orders = orderConverter.toEntity(orderCreateDTO);
         orders.setUserId(userId);
         orders.setOrderSn("OD" + IdUtil.getSnowflakeNextIdStr());
@@ -147,5 +156,12 @@ public class OrdersServiceImpl implements OrdersService {
     private Sitter getSitterByUserId(Long userId) {
         return sitterMapper.selectOne(new LambdaQueryWrapper<Sitter>()
                 .eq(Sitter::getUserId, userId));
+    }
+
+    private boolean isMyPet(Long petId, Long userId) {
+        Long count = petInfoMapper.selectCount(new LambdaQueryWrapper<PetInfo>()
+                .eq(PetInfo::getId, petId)
+                .eq(PetInfo::getUserId, userId));
+        return count != null && count > 0;
     }
 }

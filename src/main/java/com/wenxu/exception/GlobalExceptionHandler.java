@@ -26,4 +26,9 @@ public class GlobalExceptionHandler {
                 .orElse("Request parameter validation failed");
         return Result.error(message);
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public Result<String> handleIllegalArgument(IllegalArgumentException ex) {
+        return Result.error(ex.getMessage());
+    }
 }

@@ -7,6 +7,7 @@ import com.wenxu.dto.OrderCreateDTO;
 import com.wenxu.entity.Orders;
 import com.wenxu.entity.Sitter;
 import com.wenxu.mapper.OrdersMapper;
+import com.wenxu.mapper.PetInfoMapper;
 import com.wenxu.mapper.SitterMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,7 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,6 +39,9 @@ class OrdersServiceImplTest {
     private SitterMapper sitterMapper;
 
     @Mock
+    private PetInfoMapper petInfoMapper;
+
+    @Mock
     private OrderConverter orderConverter;
 
     @InjectMocks
@@ -48,6 +53,7 @@ class OrdersServiceImplTest {
         Orders mappedOrder = new Orders();
         mappedOrder.setPetId(1L);
 
+        when(petInfoMapper.selectCount(any())).thenReturn(1L);
         when(orderConverter.toEntity(dto)).thenReturn(mappedOrder);
         when(ordersMapper.insert(mappedOrder)).thenReturn(1);
 
@@ -62,6 +68,18 @@ class OrdersServiceImplTest {
         assertEquals(new BigDecimal("99.00"), result.getPayAmount());
         assertEquals(new BigDecimal("3.5"), result.getDistance());
         verify(ordersMapper).insert(mappedOrder);
+    }
+
+    @Test
+    void createOrderShouldRejectPetNotOwnedByCurrentUser() {
+        OrderCreateDTO dto = new OrderCreateDTO();
+        dto.setPetId(1L);
+
+        when(petInfoMapper.selectCount(any())).thenReturn(0L);
+
+        assertThrows(IllegalArgumentException.class, () -> ordersService.createOrder(dto, 100L));
+        verify(orderConverter, never()).toEntity(any());
+        verify(ordersMapper, never()).insert(any());
     }
 
     @Test
