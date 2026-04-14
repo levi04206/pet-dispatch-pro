@@ -1,6 +1,7 @@
 package com.wenxu.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.wenxu.common.OrderStatusEnum;
 import com.wenxu.converter.OrderConverter;
 import com.wenxu.dto.OrderCreateDTO;
@@ -27,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -256,11 +258,13 @@ class OrdersServiceImplTest {
 
         when(sitterMapper.selectOne(any())).thenReturn(sitter);
         when(ordersMapper.update(any(), any())).thenReturn(1);
+        when(sitterMapper.update(isNull(), any(Wrapper.class))).thenReturn(1);
 
         boolean grabbed = ordersService.grabOrder(20L, 100L);
 
         assertTrue(grabbed);
         verify(ordersMapper).update(any(), any());
+        verify(sitterMapper).update(isNull(), any(Wrapper.class));
     }
 
     @Test
@@ -318,6 +322,7 @@ class OrdersServiceImplTest {
 
         when(sitterMapper.selectOne(any())).thenReturn(sitter);
         when(ordersMapper.update(any(), any())).thenReturn(1);
+        when(sitterMapper.update(isNull(), any(Wrapper.class))).thenReturn(1);
 
         boolean completed = ordersService.completeService(20L, "end-proof.jpg", 100L);
 
@@ -330,6 +335,7 @@ class OrdersServiceImplTest {
                 () -> assertTrue(wrapper.getSqlSet().contains("end_proof")),
                 () -> assertTrue(wrapper.getSqlSet().contains("version = version + 1"))
         );
+        verify(sitterMapper).update(isNull(), any(Wrapper.class));
     }
 
     @Test

@@ -16,6 +16,7 @@ import com.wenxu.mapper.SitterMapper;
 import com.wenxu.service.OrdersService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -27,6 +28,7 @@ public class OrdersServiceImpl implements OrdersService {
 
     private static final int SITTER_AUDIT_APPROVED = 1;
     private static final int SITTER_WORK_ACCEPTING = 1;
+    private static final int SITTER_WORK_SERVING = 2;
 
     @Resource
     private OrdersMapper ordersMapper;
@@ -156,6 +158,7 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean grabOrder(Long orderId, Long userId) {
         Sitter sitter = getAvailableSitter(userId);
         if (sitter == null) {
@@ -169,7 +172,11 @@ public class OrdersServiceImpl implements OrdersService {
                 .set(Orders::getSitterId, sitter.getId())
                 .set(Orders::getAcceptTime, LocalDateTime.now())
                 .setSql("version = version + 1");
-        return ordersMapper.update(null, updateWrapper) > 0;
+        if (ordersMapper.update(null, updateWrapper) <= 0) {
+            return false;
+        }
+
+        return updateSitterWorkStatus(sitter.getId(), SITTER_WORK_SERVING);
     }
 
     @Override
@@ -191,6 +198,7 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean completeService(Long orderId, String picUrl, Long userId) {
         Sitter sitter = getApprovedSitter(userId);
         if (sitter == null) {
@@ -205,7 +213,15 @@ public class OrdersServiceImpl implements OrdersService {
                 .set(Orders::getEndTime, LocalDateTime.now())
                 .set(Orders::getEndProof, picUrl)
                 .setSql("version = version + 1");
-        return ordersMapper.update(null, updateWrapper) > 0;
+        if (ordersMapper.update(null, updateWrapper) <= 0) {
+            return false;
+        }
+
+        LambdaUpdateWrapper<Sitter> sitterUpdateWrapper = new LambdaUpdateWrapper<>();
+        sitterUpdateWrapper.eq(Sitter::getId, sitter.getId())
+                .set(Sitter::getWorkStatus, SITTER_WORK_ACCEPTING)
+                .setSql("order_count = order_count + 1");
+        return sitterMapper.update(null, sitterUpdateWrapper) > 0;
     }
 
     private Sitter getAvailableSitter(Long userId) {
@@ -233,6 +249,13 @@ public class OrdersServiceImpl implements OrdersService {
     private Sitter getSitterByUserId(Long userId) {
         return sitterMapper.selectOne(new LambdaQueryWrapper<Sitter>()
                 .eq(Sitter::getUserId, userId));
+    }
+
+    private boolean updateSitterWorkStatus(Long sitterId, int workStatus) {
+        LambdaUpdateWrapper<Sitter> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Sitter::getId, sitterId)
+                .set(Sitter::getWorkStatus, workStatus);
+        return sitterMapper.update(null, updateWrapper) > 0;
     }
 
     private boolean isMyPet(Long petId, Long userId) {
