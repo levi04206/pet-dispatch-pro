@@ -25,8 +25,11 @@ public class AliOssUtil {
      * @return 返回上传成功后的图片 URL 网址
      */
     public String upload(byte[] bytes, String objectName) {
-        // 生成唯一文件名，防止覆盖 (UUID + 原始后缀)
-        String extension = objectName.substring(objectName.lastIndexOf("."));
+        String extension = "";
+        int dotIndex = objectName.lastIndexOf(".");
+        if (dotIndex >= 0) {
+            extension = objectName.substring(dotIndex);
+        }
         String fileName = UUID.randomUUID().toString() + extension;
 
         OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);

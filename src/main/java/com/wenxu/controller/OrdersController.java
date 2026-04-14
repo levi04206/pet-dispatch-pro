@@ -5,6 +5,7 @@ import com.wenxu.common.Result;
 import com.wenxu.converter.OrderConverter;
 import com.wenxu.dto.OrderCreateDTO;
 import com.wenxu.dto.OrderEvaluateDTO;
+import com.wenxu.dto.OrderProofDTO;
 import com.wenxu.entity.Orders;
 import com.wenxu.service.OrdersService;
 import com.wenxu.vo.OrderVO;
@@ -81,16 +82,16 @@ public class OrdersController {
     }
 
     @PostMapping("/start")
-    public Result<String> startService(@RequestParam Long orderId, @RequestParam String picUrl) {
+    public Result<String> startService(@Valid @RequestBody OrderProofDTO orderProofDTO) {
         Long userId = BaseContext.getCurrentId();
-        boolean started = ordersService.startService(orderId, picUrl, userId);
+        boolean started = ordersService.startService(orderProofDTO.getOrderId(), orderProofDTO.getProofUrl(), userId);
         return started ? Result.success("打卡成功，服务开始") : Result.error("操作失败，请检查订单状态或归属权");
     }
 
     @PostMapping("/complete")
-    public Result<String> completeService(@RequestParam Long orderId, @RequestParam String picUrl) {
+    public Result<String> completeService(@Valid @RequestBody OrderProofDTO orderProofDTO) {
         Long userId = BaseContext.getCurrentId();
-        boolean completed = ordersService.completeService(orderId, picUrl, userId);
+        boolean completed = ordersService.completeService(orderProofDTO.getOrderId(), orderProofDTO.getProofUrl(), userId);
         return completed ? Result.success("服务已完成") : Result.error("操作失败，请检查订单状态或归属权");
     }
 }
