@@ -13,6 +13,8 @@ import com.wenxu.service.SitterService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class SitterServiceImpl implements SitterService {
 
@@ -69,6 +71,14 @@ public class SitterServiceImpl implements SitterService {
             userMapper.updateById(user);
         }
         return updated;
+    }
+
+    @Override
+    public List<Sitter> listPendingApplications() {
+        LambdaQueryWrapper<Sitter> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Sitter::getAuditStatus, AUDIT_PENDING);
+        queryWrapper.orderByDesc(Sitter::getCreateTime);
+        return sitterMapper.selectList(queryWrapper);
     }
 
     @Override

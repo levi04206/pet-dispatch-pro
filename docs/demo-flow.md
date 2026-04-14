@@ -36,9 +36,10 @@ source docs/demo-data.sql;
 ## 4. 宠托师入驻
 
 1. 普通用户调用 `POST /api/sitter/apply`
-2. 管理员调用 `POST /api/admin/sitter/audit?id=宠托师ID&auditStatus=1`
-3. 宠托师调用 `GET /api/sitter/me`
-4. 宠托师调用 `POST /api/sitter/workStatus?workStatus=1`
+2. 管理员调用 `GET /api/admin/sitter/pending` 查看待审核申请。
+3. 管理员调用 `POST /api/admin/sitter/audit?id=宠托师ID&auditStatus=1`
+4. 宠托师调用 `GET /api/sitter/me`
+5. 宠托师调用 `POST /api/sitter/workStatus?workStatus=1`
 
 演示重点：申请、管理员审核、角色升级、切换接单状态。
 
@@ -63,4 +64,3 @@ source docs/demo-data.sql;
 - 用户取消待支付/待接单订单：`POST /api/orders/cancel?orderId=订单ID`
 
 演示重点：订单查询按身份隔离，取消订单按状态机限制。
-

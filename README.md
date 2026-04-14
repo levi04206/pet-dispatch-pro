@@ -56,6 +56,7 @@
 - `GET /api/sitter/me`
 - `POST /api/sitter/workStatus?workStatus=0`
 - `POST /api/sitter/workStatus?workStatus=1`
+- `GET /api/admin/sitter/pending`
 - `POST /api/admin/sitter/audit?id=...&auditStatus=1`
 
 订单：

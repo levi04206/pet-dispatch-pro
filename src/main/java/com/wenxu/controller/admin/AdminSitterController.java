@@ -1,12 +1,17 @@
 package com.wenxu.controller.admin;
 
 import com.wenxu.common.Result;
+import com.wenxu.converter.SitterConverter;
 import com.wenxu.service.SitterService;
+import com.wenxu.vo.SitterVO;
 import jakarta.annotation.Resource;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/sitter")
@@ -14,6 +19,14 @@ public class AdminSitterController {
 
     @Resource
     private SitterService sitterService;
+
+    @Resource
+    private SitterConverter sitterConverter;
+
+    @GetMapping("/pending")
+    public Result<List<SitterVO>> listPendingApplications() {
+        return Result.success(sitterConverter.toVOList(sitterService.listPendingApplications()));
+    }
 
     @PostMapping("/audit")
     public Result<String> auditSitter(@RequestParam Long id, @RequestParam Integer auditStatus) {
