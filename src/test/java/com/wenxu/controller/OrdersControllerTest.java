@@ -2,6 +2,7 @@ package com.wenxu.controller;
 
 import com.wenxu.common.BaseContext;
 import com.wenxu.converter.OrderConverter;
+import com.wenxu.dto.OrderCreateDTO;
 import com.wenxu.entity.Orders;
 import com.wenxu.exception.GlobalExceptionHandler;
 import com.wenxu.service.OrdersService;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -18,6 +20,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -50,6 +55,41 @@ class OrdersControllerTest {
     @AfterEach
     void tearDown() {
         BaseContext.removeCurrentId();
+    }
+
+    @Test
+    void createOrderShouldUseCurrentUserAndReturnOrderVO() throws Exception {
+        Orders order = new Orders();
+        order.setId(20L);
+        order.setPetId(10L);
+        OrderVO vo = new OrderVO();
+        vo.setId(20L);
+        vo.setPetId(10L);
+
+        when(ordersService.createOrder(any(OrderCreateDTO.class), eq(100L))).thenReturn(order);
+        when(orderConverter.toVO(order)).thenReturn(vo);
+
+        mockMvc.perform(post("/api/orders/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"petId\":10,\"reserveTime\":\"2099-04-14T10:00:00\",\"totalAmount\":99.00,\"distance\":3.5}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1))
+                .andExpect(jsonPath("$.data.id").value(20))
+                .andExpect(jsonPath("$.data.petId").value(10));
+
+        ArgumentCaptor<OrderCreateDTO> captor = ArgumentCaptor.forClass(OrderCreateDTO.class);
+        verify(ordersService).createOrder(captor.capture(), eq(100L));
+        assertEquals(10L, captor.getValue().getPetId());
+    }
+
+    @Test
+    void createOrderShouldRejectMissingPetId() throws Exception {
+        mockMvc.perform(post("/api/orders/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"reserveTime\":\"2099-04-14T10:00:00\",\"totalAmount\":99.00,\"distance\":3.5}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.msg", containsString("Pet id is required")));
     }
 
     @Test
