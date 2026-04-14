@@ -34,6 +34,7 @@
 
 - `docs/schema.sql`
 - `docs/migrations/`
+- `docs/demo-data.sql` 提供少量演示数据，可用于本地串核心流程。
 
 ## 常用接口
 
@@ -78,4 +79,3 @@
 ```bash
 mvn test
 ```
-

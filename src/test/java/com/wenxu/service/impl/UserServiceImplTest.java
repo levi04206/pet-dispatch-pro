@@ -59,6 +59,7 @@ class UserServiceImplTest {
         User user = new User();
         user.setId(1L);
         user.setPhone("13800138000");
+        user.setStatus(1);
         user.setRole(UserRoleEnum.ADMIN.name());
 
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
@@ -73,6 +74,24 @@ class UserServiceImplTest {
         verify(userMapper, never()).insert(any());
         ArgumentCaptor<Map<String, Object>> claimsCaptor = captureClaims();
         assertEquals(UserRoleEnum.ADMIN.name(), claimsCaptor.getValue().get("role"));
+    }
+
+    @Test
+    void loginShouldRejectDisabledUser() {
+        User user = new User();
+        user.setId(1L);
+        user.setPhone("13800138000");
+        user.setStatus(0);
+        user.setRole(UserRoleEnum.USER.name());
+
+        when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.get(RedisConstants.LOGIN_CODE_KEY + "13800138000")).thenReturn("123456");
+        when(userMapper.selectOne(any())).thenReturn(user);
+
+        String token = userService.login("13800138000", "123456");
+
+        assertNull(token);
+        verify(jwtUtils, never()).createToken(any());
     }
 
     @Test

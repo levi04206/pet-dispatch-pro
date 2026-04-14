@@ -20,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class UserServiceImpl implements UserService {
 
+    private static final int USER_STATUS_NORMAL = 1;
+
     @Resource
     private UserMapper userMapper;
 
@@ -60,6 +62,9 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             user = registerUserWithPhone(phone);
         }
+        if (!Integer.valueOf(USER_STATUS_NORMAL).equals(user.getStatus())) {
+            return null;
+        }
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", user.getId());
@@ -82,7 +87,7 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         user.setPhone(phone);
         user.setNickname("铲屎官_" + RandomUtil.randomNumbers(6));
-        user.setStatus(1);
+        user.setStatus(USER_STATUS_NORMAL);
         user.setRole(UserRoleEnum.USER.name());
         userMapper.insert(user);
         return user;
