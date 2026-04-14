@@ -2,9 +2,11 @@ package com.wenxu.controller;
 
 import com.wenxu.common.BaseContext;
 import com.wenxu.common.Result;
+import com.wenxu.converter.OrderConverter;
 import com.wenxu.dto.OrderCreateDTO;
 import com.wenxu.entity.Orders;
 import com.wenxu.service.OrdersService;
+import com.wenxu.vo.OrderVO;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,11 +25,14 @@ public class OrdersController {
     @Resource
     private OrdersService ordersService;
 
+    @Resource
+    private OrderConverter orderConverter;
+
     @PostMapping("/create")
-    public Result<Orders> createOrder(@Valid @RequestBody OrderCreateDTO orderCreateDTO) {
+    public Result<OrderVO> createOrder(@Valid @RequestBody OrderCreateDTO orderCreateDTO) {
         Long userId = BaseContext.getCurrentId();
         Orders orders = ordersService.createOrder(orderCreateDTO, userId);
-        return Result.success(orders);
+        return Result.success(orderConverter.toVO(orders));
     }
 
     @PostMapping("/pay")
@@ -37,8 +42,8 @@ public class OrdersController {
     }
 
     @GetMapping("/publicPool")
-    public Result<List<Orders>> getPublicPool() {
-        return Result.success(ordersService.getPublicPool());
+    public Result<List<OrderVO>> getPublicPool() {
+        return Result.success(orderConverter.toVOList(ordersService.getPublicPool()));
     }
 
     @PostMapping("/grab")

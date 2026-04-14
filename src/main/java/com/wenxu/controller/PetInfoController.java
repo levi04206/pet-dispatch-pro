@@ -2,9 +2,11 @@ package com.wenxu.controller;
 
 import com.wenxu.common.BaseContext;
 import com.wenxu.common.Result;
+import com.wenxu.converter.PetInfoConverter;
 import com.wenxu.dto.PetInfoAddDTO;
 import com.wenxu.entity.PetInfo;
 import com.wenxu.service.PetInfoService;
+import com.wenxu.vo.PetInfoVO;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,6 +26,9 @@ public class PetInfoController {
     @Resource
     private PetInfoService petInfoService;
 
+    @Resource
+    private PetInfoConverter petInfoConverter;
+
     @PostMapping("/add")
     public Result<String> addPet(@Valid @RequestBody PetInfoAddDTO petInfoAddDTO) {
         Long userId = BaseContext.getCurrentId();
@@ -32,10 +37,10 @@ public class PetInfoController {
     }
 
     @GetMapping("/list")
-    public Result<List<PetInfo>> listMyPets() {
+    public Result<List<PetInfoVO>> listMyPets() {
         Long userId = BaseContext.getCurrentId();
         List<PetInfo> list = petInfoService.listMyPets(userId);
-        return Result.success(list);
+        return Result.success(petInfoConverter.toVOList(list));
     }
 
     @DeleteMapping("/{id}")
