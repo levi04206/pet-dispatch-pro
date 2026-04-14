@@ -2,8 +2,9 @@ package com.wenxu.controller;
 
 import com.wenxu.common.Result;
 import com.wenxu.common.ResultCodeEnum;
-import com.wenxu.entity.User;
+import com.wenxu.converter.UserConverter;
 import com.wenxu.service.UserService;
+import com.wenxu.vo.UserVO;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,9 @@ public class UserController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private UserConverter userConverter;
 
     @GetMapping("/sendCode")
     public Result<String> sendCode(@RequestParam String phone) {
@@ -37,7 +41,7 @@ public class UserController {
     }
 
     @GetMapping("/test")
-    public Result<User> testInsertAndQuery() {
-        return Result.success(userService.testInsertAndQuery());
+    public Result<UserVO> testInsertAndQuery() {
+        return Result.success(userConverter.toVO(userService.testInsertAndQuery()));
     }
 }
