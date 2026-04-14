@@ -1,5 +1,6 @@
 package com.wenxu.controller;
 
+import com.wenxu.common.ApiMessages;
 import com.wenxu.common.BaseContext;
 import com.wenxu.common.Result;
 import com.wenxu.converter.PetInfoConverter;
@@ -33,7 +34,7 @@ public class PetInfoController {
     public Result<String> addPet(@Valid @RequestBody PetInfoAddDTO petInfoAddDTO) {
         Long userId = BaseContext.getCurrentId();
         petInfoService.addPet(petInfoAddDTO, userId);
-        return Result.success("添加宠物成功");
+        return Result.success(ApiMessages.PET_ADD_SUCCESS);
     }
 
     @GetMapping("/list")
@@ -48,8 +49,8 @@ public class PetInfoController {
         Long userId = BaseContext.getCurrentId();
         boolean deleted = petInfoService.deleteMyPet(id, userId);
         if (!deleted) {
-            return Result.error("宠物不存在或无权删除");
+            return Result.error(ApiMessages.PET_NOT_FOUND_OR_FORBIDDEN);
         }
-        return Result.success("删除成功");
+        return Result.success(ApiMessages.PET_DELETE_SUCCESS);
     }
 }

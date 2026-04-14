@@ -1,5 +1,6 @@
 package com.wenxu.controller;
 
+import com.wenxu.common.ApiMessages;
 import com.wenxu.common.Result;
 import com.wenxu.utils.AliOssUtil;
 import jakarta.annotation.Resource;
@@ -27,10 +28,10 @@ public class CommonController {
     @PostMapping("/upload")
     public Result<String> upload(@RequestParam MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            return Result.error("上传文件不能为空");
+            return Result.error(ApiMessages.UPLOAD_FILE_EMPTY);
         }
         if (!StringUtils.hasText(file.getOriginalFilename())) {
-            return Result.error("上传文件名不能为空");
+            return Result.error(ApiMessages.UPLOAD_FILENAME_EMPTY);
         }
 
         log.info("文件上传：{}", file.getOriginalFilename());
@@ -39,7 +40,7 @@ public class CommonController {
             return Result.success(filePath);
         } catch (IOException e) {
             log.error("文件上传失败", e);
-            return Result.error("文件上传失败");
+            return Result.error(ApiMessages.UPLOAD_FAILED);
         }
     }
 }

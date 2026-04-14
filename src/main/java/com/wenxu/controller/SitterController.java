@@ -1,5 +1,6 @@
 package com.wenxu.controller;
 
+import com.wenxu.common.ApiMessages;
 import com.wenxu.common.BaseContext;
 import com.wenxu.common.Result;
 import com.wenxu.converter.SitterConverter;
@@ -31,9 +32,9 @@ public class SitterController {
         Long currentUserId = BaseContext.getCurrentId();
         boolean applied = sitterService.applySitter(sitterApplyDTO, currentUserId);
         if (!applied) {
-            return Result.error("您已提交过申请或已经是宠托师，请勿重复提交");
+            return Result.error(ApiMessages.SITTER_APPLY_DUPLICATE);
         }
-        return Result.success("入驻申请已提交，请等待管理员审核");
+        return Result.success(ApiMessages.SITTER_APPLY_SUCCESS);
     }
 
     @GetMapping("/me")
@@ -41,7 +42,7 @@ public class SitterController {
         Long currentUserId = BaseContext.getCurrentId();
         Sitter sitter = sitterService.getMyProfile(currentUserId);
         if (sitter == null) {
-            return Result.error("当前用户还不是宠托师");
+            return Result.error(ApiMessages.SITTER_NOT_FOUND);
         }
         return Result.success(sitterConverter.toVO(sitter));
     }
@@ -51,8 +52,8 @@ public class SitterController {
         Long currentUserId = BaseContext.getCurrentId();
         boolean switched = sitterService.switchWorkStatus(currentUserId, workStatus);
         if (!switched) {
-            return Result.error("状态切换失败，请确认已通过审核且状态值合法");
+            return Result.error(ApiMessages.SITTER_WORK_STATUS_SWITCH_FAILED);
         }
-        return Result.success(workStatus == 1 ? "已切换为接单中" : "已切换为休息中");
+        return Result.success(workStatus == 1 ? ApiMessages.SITTER_WORK_ACCEPTING : ApiMessages.SITTER_WORK_RESTING);
     }
 }

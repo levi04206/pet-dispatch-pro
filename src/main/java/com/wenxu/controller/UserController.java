@@ -1,5 +1,6 @@
 package com.wenxu.controller;
 
+import com.wenxu.common.ApiMessages;
 import com.wenxu.common.Result;
 import com.wenxu.common.ResultCodeEnum;
 import com.wenxu.converter.UserConverter;
@@ -28,14 +29,14 @@ public class UserController {
         if (!sent) {
             return Result.error(ResultCodeEnum.PARAM_ERROR);
         }
-        return Result.success("验证码发送成功");
+        return Result.success(ApiMessages.CODE_SENT);
     }
 
     @PostMapping("/login")
     public Result<String> login(@RequestParam String phone, @RequestParam String code) {
         String token = userService.login(phone, code);
         if (token == null) {
-            return Result.error("验证码错误或已失效");
+            return Result.error(ApiMessages.CODE_INVALID);
         }
         return Result.success(token);
     }

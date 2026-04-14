@@ -1,5 +1,6 @@
 package com.wenxu.controller;
 
+import com.wenxu.common.ApiMessages;
 import com.wenxu.common.BaseContext;
 import com.wenxu.common.Result;
 import com.wenxu.converter.OrderConverter;
@@ -42,7 +43,7 @@ public class OrdersController {
     public Result<String> payOrder(@RequestParam String orderSn) {
         Long userId = BaseContext.getCurrentId();
         boolean paid = ordersService.payOrder(orderSn, userId);
-        return paid ? Result.success("支付成功，订单已进入待接单状态") : Result.error("订单不存在或状态异常，无法支付");
+        return paid ? Result.success(ApiMessages.ORDER_PAY_SUCCESS) : Result.error(ApiMessages.ORDER_PAY_FAILED);
     }
 
     @GetMapping("/publicPool")
@@ -62,7 +63,7 @@ public class OrdersController {
         Long userId = BaseContext.getCurrentId();
         Orders orders = ordersService.getMyOrderDetail(orderId, userId);
         if (orders == null) {
-            return Result.error("订单不存在或无权查看");
+            return Result.error(ApiMessages.ORDER_NOT_FOUND_OR_FORBIDDEN);
         }
         return Result.success(orderConverter.toVO(orders));
     }
@@ -78,7 +79,7 @@ public class OrdersController {
         Long userId = BaseContext.getCurrentId();
         Orders orders = ordersService.getMyServiceOrderDetail(orderId, userId);
         if (orders == null) {
-            return Result.error("订单不存在或无权查看");
+            return Result.error(ApiMessages.ORDER_NOT_FOUND_OR_FORBIDDEN);
         }
         return Result.success(orderConverter.toVO(orders));
     }
@@ -87,34 +88,34 @@ public class OrdersController {
     public Result<String> cancelOrder(@RequestParam Long orderId) {
         Long userId = BaseContext.getCurrentId();
         boolean canceled = ordersService.cancelOrder(orderId, userId);
-        return canceled ? Result.success("订单已取消") : Result.error("取消失败，订单不存在、无权操作或当前状态不可取消");
+        return canceled ? Result.success(ApiMessages.ORDER_CANCEL_SUCCESS) : Result.error(ApiMessages.ORDER_CANCEL_FAILED);
     }
 
     @PostMapping("/evaluate")
     public Result<String> evaluateOrder(@Valid @RequestBody OrderEvaluateDTO orderEvaluateDTO) {
         Long userId = BaseContext.getCurrentId();
         boolean evaluated = ordersService.evaluateOrder(orderEvaluateDTO, userId);
-        return evaluated ? Result.success("评价成功") : Result.error("评价失败，订单不存在、无权操作或当前状态不可评价");
+        return evaluated ? Result.success(ApiMessages.ORDER_EVALUATE_SUCCESS) : Result.error(ApiMessages.ORDER_EVALUATE_FAILED);
     }
 
     @PostMapping("/grab")
     public Result<String> grabOrder(@RequestParam Long orderId) {
         Long userId = BaseContext.getCurrentId();
         boolean grabbed = ordersService.grabOrder(orderId, userId);
-        return grabbed ? Result.success("抢单成功") : Result.error("抢单失败，订单已被抢走或当前用户不具备接单资格");
+        return grabbed ? Result.success(ApiMessages.ORDER_GRAB_SUCCESS) : Result.error(ApiMessages.ORDER_GRAB_FAILED);
     }
 
     @PostMapping("/start")
     public Result<String> startService(@Valid @RequestBody OrderProofDTO orderProofDTO) {
         Long userId = BaseContext.getCurrentId();
         boolean started = ordersService.startService(orderProofDTO.getOrderId(), orderProofDTO.getProofUrl(), userId);
-        return started ? Result.success("打卡成功，服务开始") : Result.error("操作失败，请检查订单状态或归属权");
+        return started ? Result.success(ApiMessages.ORDER_START_SUCCESS) : Result.error(ApiMessages.ORDER_OPERATION_FAILED);
     }
 
     @PostMapping("/complete")
     public Result<String> completeService(@Valid @RequestBody OrderProofDTO orderProofDTO) {
         Long userId = BaseContext.getCurrentId();
         boolean completed = ordersService.completeService(orderProofDTO.getOrderId(), orderProofDTO.getProofUrl(), userId);
-        return completed ? Result.success("服务已完成") : Result.error("操作失败，请检查订单状态或归属权");
+        return completed ? Result.success(ApiMessages.ORDER_SERVICE_COMPLETE_SUCCESS) : Result.error(ApiMessages.ORDER_OPERATION_FAILED);
     }
 }

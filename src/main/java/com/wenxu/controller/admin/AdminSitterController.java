@@ -1,5 +1,6 @@
 package com.wenxu.controller.admin;
 
+import com.wenxu.common.ApiMessages;
 import com.wenxu.common.Result;
 import com.wenxu.converter.SitterConverter;
 import com.wenxu.service.SitterService;
@@ -31,15 +32,15 @@ public class AdminSitterController {
     @PostMapping("/audit")
     public Result<String> auditSitter(@RequestParam Long id, @RequestParam Integer auditStatus) {
         if (auditStatus != 1 && auditStatus != 2) {
-            return Result.error("非法的审核状态码");
+            return Result.error(ApiMessages.SITTER_AUDIT_STATUS_INVALID);
         }
 
         boolean audited = sitterService.auditSitter(id, auditStatus);
         if (!audited) {
-            return Result.error("审核失败，找不到该申请记录");
+            return Result.error(ApiMessages.SITTER_AUDIT_FAILED);
         }
 
-        String msg = (auditStatus == 1) ? "审批通过，该用户正式成为宠托师" : "已驳回该申请";
+        String msg = (auditStatus == 1) ? ApiMessages.SITTER_AUDIT_APPROVED : ApiMessages.SITTER_AUDIT_REJECTED;
         return Result.success(msg);
     }
 }
