@@ -105,7 +105,7 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public boolean startService(Long orderId, String picUrl, Long userId) {
-        Sitter sitter = getSitterByUserId(userId);
+        Sitter sitter = getApprovedSitter(userId);
         if (sitter == null) {
             return false;
         }
@@ -123,7 +123,7 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public boolean completeService(Long orderId, String picUrl, Long userId) {
-        Sitter sitter = getSitterByUserId(userId);
+        Sitter sitter = getApprovedSitter(userId);
         if (sitter == null) {
             return false;
         }
@@ -140,14 +140,22 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     private Sitter getAvailableSitter(Long userId) {
+        Sitter sitter = getApprovedSitter(userId);
+        if (sitter == null) {
+            return null;
+        }
+        if (!Integer.valueOf(SITTER_WORK_ACCEPTING).equals(sitter.getWorkStatus())) {
+            return null;
+        }
+        return sitter;
+    }
+
+    private Sitter getApprovedSitter(Long userId) {
         Sitter sitter = getSitterByUserId(userId);
         if (sitter == null) {
             return null;
         }
         if (!Integer.valueOf(SITTER_AUDIT_APPROVED).equals(sitter.getAuditStatus())) {
-            return null;
-        }
-        if (!Integer.valueOf(SITTER_WORK_ACCEPTING).equals(sitter.getWorkStatus())) {
             return null;
         }
         return sitter;

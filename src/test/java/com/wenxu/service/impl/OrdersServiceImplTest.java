@@ -133,6 +133,7 @@ class OrdersServiceImplTest {
     void startServiceShouldBindSitterIdDerivedFromCurrentUser() {
         Sitter sitter = new Sitter();
         sitter.setId(10L);
+        sitter.setAuditStatus(1);
 
         when(sitterMapper.selectOne(any())).thenReturn(sitter);
         when(ordersMapper.update(any(), any())).thenReturn(1);
@@ -164,6 +165,7 @@ class OrdersServiceImplTest {
     void completeServiceShouldBindSitterIdDerivedFromCurrentUser() {
         Sitter sitter = new Sitter();
         sitter.setId(10L);
+        sitter.setAuditStatus(1);
 
         when(sitterMapper.selectOne(any())).thenReturn(sitter);
         when(ordersMapper.update(any(), any())).thenReturn(1);
@@ -184,6 +186,34 @@ class OrdersServiceImplTest {
     @Test
     void completeServiceShouldRejectWhenCurrentUserHasNoSitterProfile() {
         when(sitterMapper.selectOne(any())).thenReturn(null);
+
+        boolean completed = ordersService.completeService(20L, "end-proof.jpg", 100L);
+
+        assertFalse(completed);
+        verify(ordersMapper, never()).update(any(), any());
+    }
+
+    @Test
+    void startServiceShouldRejectUnapprovedSitter() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setAuditStatus(0);
+
+        when(sitterMapper.selectOne(any())).thenReturn(sitter);
+
+        boolean started = ordersService.startService(20L, "start-proof.jpg", 100L);
+
+        assertFalse(started);
+        verify(ordersMapper, never()).update(any(), any());
+    }
+
+    @Test
+    void completeServiceShouldRejectUnapprovedSitter() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setAuditStatus(0);
+
+        when(sitterMapper.selectOne(any())).thenReturn(sitter);
 
         boolean completed = ordersService.completeService(20L, "end-proof.jpg", 100L);
 
