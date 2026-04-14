@@ -91,6 +91,78 @@ class OrdersControllerTest {
     }
 
     @Test
+    void listMyOrdersShouldUseCurrentUser() throws Exception {
+        Orders order = new Orders();
+        order.setId(20L);
+        OrderVO vo = new OrderVO();
+        vo.setId(20L);
+
+        when(ordersService.listMyOrders(100L)).thenReturn(java.util.List.of(order));
+        when(orderConverter.toVOList(java.util.List.of(order))).thenReturn(java.util.List.of(vo));
+
+        mockMvc.perform(get("/api/orders/my"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1))
+                .andExpect(jsonPath("$.data[0].id").value(20));
+
+        verify(ordersService).listMyOrders(100L);
+    }
+
+    @Test
+    void listMyServiceOrdersShouldUseCurrentUser() throws Exception {
+        Orders order = new Orders();
+        order.setId(20L);
+        OrderVO vo = new OrderVO();
+        vo.setId(20L);
+
+        when(ordersService.listMyServiceOrders(100L)).thenReturn(java.util.List.of(order));
+        when(orderConverter.toVOList(java.util.List.of(order))).thenReturn(java.util.List.of(vo));
+
+        mockMvc.perform(get("/api/orders/sitter/my"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1))
+                .andExpect(jsonPath("$.data[0].id").value(20));
+
+        verify(ordersService).listMyServiceOrders(100L);
+    }
+
+    @Test
+    void cancelOrderShouldUseCurrentUser() throws Exception {
+        when(ordersService.cancelOrder(20L, 100L)).thenReturn(true);
+
+        mockMvc.perform(post("/api/orders/cancel").param("orderId", "20"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1))
+                .andExpect(jsonPath("$.data").value("订单已取消"));
+
+        verify(ordersService).cancelOrder(20L, 100L);
+    }
+
+    @Test
+    void cancelOrderShouldReturnBusinessErrorWhenServiceRejects() throws Exception {
+        when(ordersService.cancelOrder(20L, 100L)).thenReturn(false);
+
+        mockMvc.perform(post("/api/orders/cancel").param("orderId", "20"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.msg").value("取消失败，订单不存在、无权操作或当前状态不可取消"));
+
+        verify(ordersService).cancelOrder(20L, 100L);
+    }
+
+    @Test
+    void grabOrderShouldUseCurrentUser() throws Exception {
+        when(ordersService.grabOrder(20L, 100L)).thenReturn(true);
+
+        mockMvc.perform(post("/api/orders/grab").param("orderId", "20"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1))
+                .andExpect(jsonPath("$.data").value("抢单成功"));
+
+        verify(ordersService).grabOrder(20L, 100L);
+    }
+
+    @Test
     void completeServiceShouldAcceptProofBody() throws Exception {
         when(ordersService.completeService(20L, "https://example.com/end.jpg", 100L)).thenReturn(true);
 
