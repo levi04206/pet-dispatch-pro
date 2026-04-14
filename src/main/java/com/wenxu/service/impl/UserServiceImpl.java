@@ -3,6 +3,7 @@ package com.wenxu.service.impl;
 import cn.hutool.core.util.PhoneUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.wenxu.common.UserRoleEnum;
 import com.wenxu.constant.RedisConstants;
 import com.wenxu.entity.User;
 import com.wenxu.mapper.UserMapper;
@@ -63,6 +64,7 @@ public class UserServiceImpl implements UserService {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", user.getId());
         claims.put("phone", user.getPhone());
+        claims.put("role", resolveRole(user.getRole()));
         return jwtUtils.createToken(claims);
     }
 
@@ -81,7 +83,12 @@ public class UserServiceImpl implements UserService {
         user.setPhone(phone);
         user.setNickname("铲屎官_" + RandomUtil.randomNumbers(6));
         user.setStatus(1);
+        user.setRole(UserRoleEnum.USER.name());
         userMapper.insert(user);
         return user;
+    }
+
+    private String resolveRole(String role) {
+        return role == null || role.isBlank() ? UserRoleEnum.USER.name() : role;
     }
 }

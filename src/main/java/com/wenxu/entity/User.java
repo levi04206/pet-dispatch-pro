@@ -22,6 +22,7 @@ public class User implements Serializable {
     private String nickname;  // 用户昵称
     private String avatar;    // 头像URL
     private Integer status;   // 账号状态: 1正常 0封禁
+    private String role;      // 用户角色: USER普通用户 SITTER宠托师 ADMIN管理员
 
     private LocalDateTime createTime;
     private LocalDateTime updateTime;

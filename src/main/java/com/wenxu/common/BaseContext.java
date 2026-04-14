@@ -1,21 +1,28 @@
 package com.wenxu.common;
 
-/**
- * 基于 ThreadLocal 封装的工具类，用于保存和获取当前登录用户 ID
- */
 public class BaseContext {
 
-    private static ThreadLocal<Long> threadLocal = new ThreadLocal<>();
+    private static final ThreadLocal<Long> CURRENT_ID = new ThreadLocal<>();
+    private static final ThreadLocal<String> CURRENT_ROLE = new ThreadLocal<>();
 
     public static void setCurrentId(Long id) {
-        threadLocal.set(id);
+        CURRENT_ID.set(id);
     }
 
     public static Long getCurrentId() {
-        return threadLocal.get();
+        return CURRENT_ID.get();
+    }
+
+    public static void setCurrentRole(String role) {
+        CURRENT_ROLE.set(role);
+    }
+
+    public static String getCurrentRole() {
+        return CURRENT_ROLE.get();
     }
 
     public static void removeCurrentId() {
-        threadLocal.remove(); // 🚨 极客提示：用完一定要删，防止内存泄漏！
+        CURRENT_ID.remove();
+        CURRENT_ROLE.remove();
     }
 }

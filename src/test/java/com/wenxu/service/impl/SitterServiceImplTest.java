@@ -1,9 +1,12 @@
 package com.wenxu.service.impl;
 
+import com.wenxu.common.UserRoleEnum;
 import com.wenxu.converter.SitterConverter;
 import com.wenxu.dto.SitterApplyDTO;
 import com.wenxu.entity.Sitter;
+import com.wenxu.entity.User;
 import com.wenxu.mapper.SitterMapper;
+import com.wenxu.mapper.UserMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,6 +29,9 @@ class SitterServiceImplTest {
 
     @Mock
     private SitterConverter sitterConverter;
+
+    @Mock
+    private UserMapper userMapper;
 
     @InjectMocks
     private SitterServiceImpl sitterService;
@@ -63,11 +69,44 @@ class SitterServiceImplTest {
 
     @Test
     void auditSitterShouldUpdateAuditStatus() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setUserId(100L);
+
+        when(sitterMapper.selectById(10L)).thenReturn(sitter);
         when(sitterMapper.update(any(), any())).thenReturn(1);
 
         boolean audited = sitterService.auditSitter(10L, 1);
 
         assertTrue(audited);
         verify(sitterMapper).update(any(), any());
+        verify(userMapper).updateById(any(User.class));
+    }
+
+    @Test
+    void auditSitterShouldPromoteUserRoleWhenApproved() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setUserId(100L);
+
+        when(sitterMapper.selectById(10L)).thenReturn(sitter);
+        when(sitterMapper.update(any(), any())).thenReturn(1);
+
+        boolean audited = sitterService.auditSitter(10L, 1);
+
+        assertTrue(audited);
+        verify(userMapper).updateById(org.mockito.ArgumentMatchers.argThat(user ->
+                Long.valueOf(100L).equals(user.getId()) && UserRoleEnum.SITTER.name().equals(user.getRole())));
+    }
+
+    @Test
+    void auditSitterShouldRejectMissingProfile() {
+        when(sitterMapper.selectById(10L)).thenReturn(null);
+
+        boolean audited = sitterService.auditSitter(10L, 1);
+
+        assertFalse(audited);
+        verify(sitterMapper, never()).update(any(), any());
+        verify(userMapper, never()).updateById(any());
     }
 }

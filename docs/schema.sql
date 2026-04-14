@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS `user` (
     `nickname` varchar(50) DEFAULT NULL COMMENT '用户昵称',
     `avatar` varchar(255) DEFAULT NULL COMMENT '头像URL(存阿里云OSS)',
     `status` tinyint DEFAULT '1' COMMENT '账号状态: 1正常 0封禁',
+    `role` varchar(20) NOT NULL DEFAULT 'USER' COMMENT '用户角色: USER普通用户 SITTER宠托师 ADMIN管理员',
     `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间',
     `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),

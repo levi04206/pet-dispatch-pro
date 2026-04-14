@@ -1,16 +1,20 @@
 package com.wenxu.service.impl;
 
+import com.wenxu.common.UserRoleEnum;
 import com.wenxu.constant.RedisConstants;
 import com.wenxu.entity.User;
 import com.wenxu.mapper.UserMapper;
 import com.wenxu.utils.JwtUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -55,6 +59,7 @@ class UserServiceImplTest {
         User user = new User();
         user.setId(1L);
         user.setPhone("13800138000");
+        user.setRole(UserRoleEnum.ADMIN.name());
 
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.get(RedisConstants.LOGIN_CODE_KEY + "13800138000")).thenReturn("123456");
@@ -66,6 +71,8 @@ class UserServiceImplTest {
         assertEquals("token-001", token);
         verify(stringRedisTemplate).delete(RedisConstants.LOGIN_CODE_KEY + "13800138000");
         verify(userMapper, never()).insert(any());
+        ArgumentCaptor<Map<String, Object>> claimsCaptor = captureClaims();
+        assertEquals(UserRoleEnum.ADMIN.name(), claimsCaptor.getValue().get("role"));
     }
 
     @Test
@@ -78,8 +85,11 @@ class UserServiceImplTest {
         String token = userService.login("13800138000", "123456");
 
         assertEquals("token-002", token);
-        verify(userMapper).insert(any(User.class));
-        verify(jwtUtils).createToken(any());
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        verify(userMapper).insert(userCaptor.capture());
+        assertEquals(UserRoleEnum.USER.name(), userCaptor.getValue().getRole());
+        ArgumentCaptor<Map<String, Object>> claimsCaptor = captureClaims();
+        assertEquals(UserRoleEnum.USER.name(), claimsCaptor.getValue().get("role"));
     }
 
     @Test
@@ -98,5 +108,12 @@ class UserServiceImplTest {
 
         assertEquals(true, sent);
         verify(valueOperations).set(eq(RedisConstants.LOGIN_CODE_KEY + "13800138000"), any(), eq(RedisConstants.LOGIN_CODE_TTL), eq(java.util.concurrent.TimeUnit.MINUTES));
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private ArgumentCaptor<Map<String, Object>> captureClaims() {
+        ArgumentCaptor<Map> captor = ArgumentCaptor.forClass(Map.class);
+        verify(jwtUtils).createToken(captor.capture());
+        return (ArgumentCaptor) captor;
     }
 }

@@ -1,6 +1,7 @@
 package com.wenxu.interceptor;
 
 import com.wenxu.common.BaseContext;
+import com.wenxu.common.UserRoleEnum;
 import com.wenxu.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
 import jakarta.annotation.Resource;
@@ -21,9 +22,11 @@ public class LoginInterceptor implements HandlerInterceptor {
         try {
             Claims claims = jwtUtils.parseToken(token);
             Long userId = Long.valueOf(claims.get("userId").toString());
+            Object roleClaim = claims.get("role");
+            String role = roleClaim == null ? UserRoleEnum.USER.name() : roleClaim.toString();
 
-            // 🚨 核心改动：把 userId 存入当前线程的口袋！
             BaseContext.setCurrentId(userId);
+            BaseContext.setCurrentRole(role);
 
             return true;
         } catch (Exception e) {
@@ -34,7 +37,6 @@ public class LoginInterceptor implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-        // 🚨 请求结束后，清理口袋，大厂规范！
         BaseContext.removeCurrentId();
     }
 }

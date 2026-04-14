@@ -2,10 +2,13 @@ package com.wenxu.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.wenxu.common.UserRoleEnum;
 import com.wenxu.converter.SitterConverter;
 import com.wenxu.dto.SitterApplyDTO;
 import com.wenxu.entity.Sitter;
+import com.wenxu.entity.User;
 import com.wenxu.mapper.SitterMapper;
+import com.wenxu.mapper.UserMapper;
 import com.wenxu.service.SitterService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -22,6 +25,9 @@ public class SitterServiceImpl implements SitterService {
 
     @Resource
     private SitterConverter sitterConverter;
+
+    @Resource
+    private UserMapper userMapper;
 
     @Override
     public boolean applySitter(SitterApplyDTO sitterApplyDTO, Long userId) {
@@ -43,12 +49,24 @@ public class SitterServiceImpl implements SitterService {
 
     @Override
     public boolean auditSitter(Long id, Integer auditStatus) {
+        Sitter sitter = sitterMapper.selectById(id);
+        if (sitter == null) {
+            return false;
+        }
+
         LambdaUpdateWrapper<Sitter> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Sitter::getId, id)
                 .set(Sitter::getAuditStatus, auditStatus);
         if (Integer.valueOf(AUDIT_APPROVED).equals(auditStatus)) {
             updateWrapper.set(Sitter::getWorkStatus, WORK_RESTING);
         }
-        return sitterMapper.update(null, updateWrapper) > 0;
+        boolean updated = sitterMapper.update(null, updateWrapper) > 0;
+        if (updated && Integer.valueOf(AUDIT_APPROVED).equals(auditStatus)) {
+            User user = new User();
+            user.setId(sitter.getUserId());
+            user.setRole(UserRoleEnum.SITTER.name());
+            userMapper.updateById(user);
+        }
+        return updated;
     }
 }
