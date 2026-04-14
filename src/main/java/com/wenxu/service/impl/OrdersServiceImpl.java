@@ -110,6 +110,25 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
+    public Orders getMyOrderDetail(Long orderId, Long userId) {
+        return ordersMapper.selectOne(new LambdaQueryWrapper<Orders>()
+                .eq(Orders::getId, orderId)
+                .eq(Orders::getUserId, userId));
+    }
+
+    @Override
+    public Orders getMyServiceOrderDetail(Long orderId, Long userId) {
+        Sitter sitter = getApprovedSitter(userId);
+        if (sitter == null) {
+            return null;
+        }
+
+        return ordersMapper.selectOne(new LambdaQueryWrapper<Orders>()
+                .eq(Orders::getId, orderId)
+                .eq(Orders::getSitterId, sitter.getId()));
+    }
+
+    @Override
     public boolean cancelOrder(Long orderId, Long userId) {
         LambdaUpdateWrapper<Orders> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Orders::getId, orderId)

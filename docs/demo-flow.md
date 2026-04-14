@@ -60,7 +60,9 @@ source docs/demo-data.sql;
 ## 6. 查询和取消
 
 - 用户查询自己的订单：`GET /api/orders/my`
+- 用户查询自己的订单详情：`GET /api/orders/{orderId}`
 - 宠托师查询自己承接的订单：`GET /api/orders/sitter/my`
+- 宠托师查询自己承接的订单详情：`GET /api/orders/sitter/{orderId}`
 - 用户取消待支付/待接单订单：`POST /api/orders/cancel?orderId=订单ID`
 
 演示重点：订单查询按身份隔离，取消订单按状态机限制。

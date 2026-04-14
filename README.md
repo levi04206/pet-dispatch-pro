@@ -65,7 +65,9 @@
 - `POST /api/orders/pay?orderSn=...`
 - `GET /api/orders/publicPool`
 - `GET /api/orders/my`
+- `GET /api/orders/{orderId}`
 - `GET /api/orders/sitter/my`
+- `GET /api/orders/sitter/{orderId}`
 - `POST /api/orders/cancel?orderId=...`
 - `POST /api/orders/grab?orderId=...`
 - `POST /api/orders/start`

@@ -12,6 +12,7 @@ import com.wenxu.vo.OrderVO;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,10 +55,30 @@ public class OrdersController {
         return Result.success(orderConverter.toVOList(ordersService.listMyOrders(userId)));
     }
 
+    @GetMapping("/{orderId}")
+    public Result<OrderVO> getMyOrderDetail(@PathVariable Long orderId) {
+        Long userId = BaseContext.getCurrentId();
+        Orders orders = ordersService.getMyOrderDetail(orderId, userId);
+        if (orders == null) {
+            return Result.error("订单不存在或无权查看");
+        }
+        return Result.success(orderConverter.toVO(orders));
+    }
+
     @GetMapping("/sitter/my")
     public Result<List<OrderVO>> listMyServiceOrders() {
         Long userId = BaseContext.getCurrentId();
         return Result.success(orderConverter.toVOList(ordersService.listMyServiceOrders(userId)));
+    }
+
+    @GetMapping("/sitter/{orderId}")
+    public Result<OrderVO> getMyServiceOrderDetail(@PathVariable Long orderId) {
+        Long userId = BaseContext.getCurrentId();
+        Orders orders = ordersService.getMyServiceOrderDetail(orderId, userId);
+        if (orders == null) {
+            return Result.error("订单不存在或无权查看");
+        }
+        return Result.success(orderConverter.toVO(orders));
     }
 
     @PostMapping("/cancel")

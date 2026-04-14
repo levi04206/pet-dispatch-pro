@@ -2,8 +2,10 @@ package com.wenxu.controller;
 
 import com.wenxu.common.BaseContext;
 import com.wenxu.converter.OrderConverter;
+import com.wenxu.entity.Orders;
 import com.wenxu.exception.GlobalExceptionHandler;
 import com.wenxu.service.OrdersService;
+import com.wenxu.vo.OrderVO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +20,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -97,5 +100,37 @@ class OrdersControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
                 .andExpect(jsonPath("$.msg", containsString("Rating must be between 1 and 5")));
+    }
+
+    @Test
+    void getMyOrderDetailShouldReturnOrderVO() throws Exception {
+        Orders order = new Orders();
+        order.setId(20L);
+        OrderVO vo = new OrderVO();
+        vo.setId(20L);
+
+        when(ordersService.getMyOrderDetail(20L, 100L)).thenReturn(order);
+        when(orderConverter.toVO(order)).thenReturn(vo);
+
+        mockMvc.perform(get("/api/orders/20"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1))
+                .andExpect(jsonPath("$.data.id").value(20));
+    }
+
+    @Test
+    void getMyServiceOrderDetailShouldReturnOrderVO() throws Exception {
+        Orders order = new Orders();
+        order.setId(20L);
+        OrderVO vo = new OrderVO();
+        vo.setId(20L);
+
+        when(ordersService.getMyServiceOrderDetail(20L, 100L)).thenReturn(order);
+        when(orderConverter.toVO(order)).thenReturn(vo);
+
+        mockMvc.perform(get("/api/orders/sitter/20"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1))
+                .andExpect(jsonPath("$.data.id").value(20));
     }
 }

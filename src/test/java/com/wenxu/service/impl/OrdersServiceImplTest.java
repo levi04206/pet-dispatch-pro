@@ -144,6 +144,49 @@ class OrdersServiceImplTest {
     }
 
     @Test
+    void getMyOrderDetailShouldScopeByOrderOwner() {
+        Orders order = new Orders();
+        order.setId(20L);
+        when(ordersMapper.selectOne(any())).thenReturn(order);
+
+        Orders result = ordersService.getMyOrderDetail(20L, 100L);
+
+        assertEquals(order, result);
+        verify(ordersMapper).selectOne(any());
+    }
+
+    @Test
+    void getMyServiceOrderDetailShouldScopeByApprovedSitter() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setAuditStatus(1);
+        Orders order = new Orders();
+        order.setId(20L);
+
+        when(sitterMapper.selectOne(any())).thenReturn(sitter);
+        when(ordersMapper.selectOne(any())).thenReturn(order);
+
+        Orders result = ordersService.getMyServiceOrderDetail(20L, 100L);
+
+        assertEquals(order, result);
+        verify(ordersMapper).selectOne(any());
+    }
+
+    @Test
+    void getMyServiceOrderDetailShouldReturnNullWhenCurrentUserIsNotApprovedSitter() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setAuditStatus(0);
+
+        when(sitterMapper.selectOne(any())).thenReturn(sitter);
+
+        Orders result = ordersService.getMyServiceOrderDetail(20L, 100L);
+
+        assertEquals(null, result);
+        verify(ordersMapper, never()).selectOne(any());
+    }
+
+    @Test
     void cancelOrderShouldScopeByOrderOwnerAndCancellableStatus() {
         when(ordersMapper.update(any(), any())).thenReturn(1);
 

@@ -18,6 +18,10 @@ public interface OrdersService {
 
     List<Orders> listMyServiceOrders(Long userId);
 
+    Orders getMyOrderDetail(Long orderId, Long userId);
+
+    Orders getMyServiceOrderDetail(Long orderId, Long userId);
+
     boolean cancelOrder(Long orderId, Long userId);
 
     boolean evaluateOrder(OrderEvaluateDTO orderEvaluateDTO, Long userId);
