@@ -12,7 +12,7 @@ public interface OrdersService {
 
     boolean payOrder(String orderSn, Long userId);
 
-    List<Orders> getPublicPool();
+    List<Orders> getPublicPool(Long userId);
 
     List<Orders> listMyOrders(Long userId);
 

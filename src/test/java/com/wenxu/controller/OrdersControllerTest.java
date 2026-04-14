@@ -79,6 +79,18 @@ class OrdersControllerTest {
     }
 
     @Test
+    void getPublicPoolShouldUseCurrentUser() throws Exception {
+        when(ordersService.getPublicPool(100L)).thenReturn(java.util.List.of());
+        when(orderConverter.toVOList(java.util.List.of())).thenReturn(java.util.List.of());
+
+        mockMvc.perform(get("/api/orders/publicPool"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1));
+
+        verify(ordersService).getPublicPool(100L);
+    }
+
+    @Test
     void completeServiceShouldAcceptProofBody() throws Exception {
         when(ordersService.completeService(20L, "https://example.com/end.jpg", 100L)).thenReturn(true);
 

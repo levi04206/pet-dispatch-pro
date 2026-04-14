@@ -115,6 +115,18 @@ class OrdersServiceImplTest {
     }
 
     @Test
+    void getPublicPoolShouldExcludeCurrentUserOrders() {
+        Orders order = new Orders();
+        order.setId(20L);
+        when(ordersMapper.selectList(any())).thenReturn(List.of(order));
+
+        List<Orders> orders = ordersService.getPublicPool(100L);
+
+        assertEquals(List.of(order), orders);
+        verify(ordersMapper).selectList(any());
+    }
+
+    @Test
     void listMyServiceOrdersShouldScopeQueryByApprovedSitter() {
         Sitter sitter = new Sitter();
         sitter.setId(10L);
@@ -265,6 +277,8 @@ class OrdersServiceImplTest {
         assertTrue(grabbed);
         verify(ordersMapper).update(any(), any());
         verify(sitterMapper).update(isNull(), any(Wrapper.class));
+        LambdaUpdateWrapper<Orders> wrapper = captureOrderUpdateWrapper();
+        assertTrue(wrapper.getSqlSegment().contains("user_id"));
     }
 
     @Test

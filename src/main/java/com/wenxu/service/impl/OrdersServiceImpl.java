@@ -84,9 +84,10 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
-    public List<Orders> getPublicPool() {
+    public List<Orders> getPublicPool(Long userId) {
         LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Orders::getStatus, OrderStatusEnum.PENDING_ACCEPT.getStatus());
+        queryWrapper.ne(Orders::getUserId, userId);
         queryWrapper.orderByDesc(Orders::getCreateTime);
         return ordersMapper.selectList(queryWrapper);
     }
@@ -168,6 +169,7 @@ public class OrdersServiceImpl implements OrdersService {
 
         LambdaUpdateWrapper<Orders> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Orders::getId, orderId)
+                .ne(Orders::getUserId, userId)
                 .eq(Orders::getStatus, OrderStatusEnum.PENDING_ACCEPT.getStatus())
                 .set(Orders::getStatus, OrderStatusEnum.ACCEPTED.getStatus())
                 .set(Orders::getSitterId, sitter.getId())

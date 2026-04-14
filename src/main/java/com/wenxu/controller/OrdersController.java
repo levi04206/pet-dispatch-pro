@@ -47,7 +47,8 @@ public class OrdersController {
 
     @GetMapping("/publicPool")
     public Result<List<OrderVO>> getPublicPool() {
-        return Result.success(orderConverter.toVOList(ordersService.getPublicPool()));
+        Long userId = BaseContext.getCurrentId();
+        return Result.success(orderConverter.toVOList(ordersService.getPublicPool(userId)));
     }
 
     @GetMapping("/my")
