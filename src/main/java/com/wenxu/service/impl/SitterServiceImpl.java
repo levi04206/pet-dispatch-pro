@@ -19,6 +19,7 @@ public class SitterServiceImpl implements SitterService {
     private static final int AUDIT_PENDING = 0;
     private static final int AUDIT_APPROVED = 1;
     private static final int WORK_RESTING = 0;
+    private static final int WORK_ACCEPTING = 1;
 
     @Resource
     private SitterMapper sitterMapper;
@@ -68,5 +69,25 @@ public class SitterServiceImpl implements SitterService {
             userMapper.updateById(user);
         }
         return updated;
+    }
+
+    @Override
+    public Sitter getMyProfile(Long userId) {
+        return sitterMapper.selectOne(new LambdaQueryWrapper<Sitter>()
+                .eq(Sitter::getUserId, userId));
+    }
+
+    @Override
+    public boolean switchWorkStatus(Long userId, Integer workStatus) {
+        if (!Integer.valueOf(WORK_RESTING).equals(workStatus)
+                && !Integer.valueOf(WORK_ACCEPTING).equals(workStatus)) {
+            return false;
+        }
+
+        LambdaUpdateWrapper<Sitter> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Sitter::getUserId, userId)
+                .eq(Sitter::getAuditStatus, AUDIT_APPROVED)
+                .set(Sitter::getWorkStatus, workStatus);
+        return sitterMapper.update(null, updateWrapper) > 0;
     }
 }

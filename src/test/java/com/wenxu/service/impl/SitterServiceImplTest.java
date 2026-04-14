@@ -109,4 +109,53 @@ class SitterServiceImplTest {
         verify(sitterMapper, never()).update(any(), any());
         verify(userMapper, never()).updateById(any());
     }
+
+    @Test
+    void getMyProfileShouldQueryByCurrentUser() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        when(sitterMapper.selectOne(any())).thenReturn(sitter);
+
+        Sitter result = sitterService.getMyProfile(100L);
+
+        assertEquals(sitter, result);
+        verify(sitterMapper).selectOne(any());
+    }
+
+    @Test
+    void switchWorkStatusShouldAllowApprovedSitterToAcceptOrders() {
+        when(sitterMapper.update(any(), any())).thenReturn(1);
+
+        boolean switched = sitterService.switchWorkStatus(100L, 1);
+
+        assertTrue(switched);
+        verify(sitterMapper).update(any(), any());
+    }
+
+    @Test
+    void switchWorkStatusShouldAllowApprovedSitterToRest() {
+        when(sitterMapper.update(any(), any())).thenReturn(1);
+
+        boolean switched = sitterService.switchWorkStatus(100L, 0);
+
+        assertTrue(switched);
+        verify(sitterMapper).update(any(), any());
+    }
+
+    @Test
+    void switchWorkStatusShouldRejectInvalidStatus() {
+        boolean switched = sitterService.switchWorkStatus(100L, 2);
+
+        assertFalse(switched);
+        verify(sitterMapper, never()).update(any(), any());
+    }
+
+    @Test
+    void switchWorkStatusShouldReturnFalseWhenCurrentUserIsNotApprovedSitter() {
+        when(sitterMapper.update(any(), any())).thenReturn(0);
+
+        boolean switched = sitterService.switchWorkStatus(100L, 1);
+
+        assertFalse(switched);
+    }
 }
