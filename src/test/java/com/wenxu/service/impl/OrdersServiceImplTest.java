@@ -1,5 +1,6 @@
 package com.wenxu.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.wenxu.common.OrderStatusEnum;
 import com.wenxu.converter.OrderConverter;
 import com.wenxu.dto.OrderCreateDTO;
@@ -7,8 +8,10 @@ import com.wenxu.entity.Orders;
 import com.wenxu.entity.Sitter;
 import com.wenxu.mapper.OrdersMapper;
 import com.wenxu.mapper.SitterMapper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -106,5 +109,74 @@ class OrdersServiceImplTest {
 
         assertFalse(grabbed);
         verify(ordersMapper, never()).update(any(), any());
+    }
+
+    @Test
+    void startServiceShouldBindSitterIdDerivedFromCurrentUser() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+
+        when(sitterMapper.selectOne(any())).thenReturn(sitter);
+        when(ordersMapper.update(any(), any())).thenReturn(1);
+
+        boolean started = ordersService.startService(20L, "start-proof.jpg", 100L);
+
+        assertTrue(started);
+        LambdaUpdateWrapper<Orders> wrapper = captureOrderUpdateWrapper();
+        Assertions.assertAll(
+                () -> assertTrue(wrapper.getSqlSegment().contains("id")),
+                () -> assertTrue(wrapper.getSqlSegment().contains("sitter_id")),
+                () -> assertTrue(wrapper.getSqlSegment().contains("status")),
+                () -> assertTrue(wrapper.getSqlSet().contains("start_proof")),
+                () -> assertTrue(wrapper.getSqlSet().contains("version = version + 1"))
+        );
+    }
+
+    @Test
+    void startServiceShouldRejectWhenCurrentUserHasNoSitterProfile() {
+        when(sitterMapper.selectOne(any())).thenReturn(null);
+
+        boolean started = ordersService.startService(20L, "start-proof.jpg", 100L);
+
+        assertFalse(started);
+        verify(ordersMapper, never()).update(any(), any());
+    }
+
+    @Test
+    void completeServiceShouldBindSitterIdDerivedFromCurrentUser() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+
+        when(sitterMapper.selectOne(any())).thenReturn(sitter);
+        when(ordersMapper.update(any(), any())).thenReturn(1);
+
+        boolean completed = ordersService.completeService(20L, "end-proof.jpg", 100L);
+
+        assertTrue(completed);
+        LambdaUpdateWrapper<Orders> wrapper = captureOrderUpdateWrapper();
+        Assertions.assertAll(
+                () -> assertTrue(wrapper.getSqlSegment().contains("id")),
+                () -> assertTrue(wrapper.getSqlSegment().contains("sitter_id")),
+                () -> assertTrue(wrapper.getSqlSegment().contains("status")),
+                () -> assertTrue(wrapper.getSqlSet().contains("end_proof")),
+                () -> assertTrue(wrapper.getSqlSet().contains("version = version + 1"))
+        );
+    }
+
+    @Test
+    void completeServiceShouldRejectWhenCurrentUserHasNoSitterProfile() {
+        when(sitterMapper.selectOne(any())).thenReturn(null);
+
+        boolean completed = ordersService.completeService(20L, "end-proof.jpg", 100L);
+
+        assertFalse(completed);
+        verify(ordersMapper, never()).update(any(), any());
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private LambdaUpdateWrapper<Orders> captureOrderUpdateWrapper() {
+        ArgumentCaptor<LambdaUpdateWrapper> captor = ArgumentCaptor.forClass(LambdaUpdateWrapper.class);
+        verify(ordersMapper).update(any(), captor.capture());
+        return captor.getValue();
     }
 }
