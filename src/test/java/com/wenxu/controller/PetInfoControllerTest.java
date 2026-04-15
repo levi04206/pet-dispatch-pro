@@ -19,6 +19,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -63,7 +67,31 @@ class PetInfoControllerTest {
                 .andExpect(jsonPath("$.code").value(1))
                 .andExpect(jsonPath("$.data").value("添加宠物成功"));
 
-        verify(petInfoService).addPet(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq(100L));
+        verify(petInfoService).addPet(any(), eq(100L));
+    }
+
+    @Test
+    void addPetShouldRejectBlankPetName() throws Exception {
+        mockMvc.perform(post("/api/pet/add")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"petName\":\"\",\"petType\":2,\"breed\":\"柯基\",\"weight\":10.5}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.msg", containsString("Pet name cannot be blank")));
+
+        verify(petInfoService, never()).addPet(any(), eq(100L));
+    }
+
+    @Test
+    void addPetShouldRejectInvalidPetType() throws Exception {
+        mockMvc.perform(post("/api/pet/add")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"petName\":\"小福\",\"petType\":9,\"breed\":\"柯基\",\"weight\":10.5}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.msg", containsString("Pet type must be 1, 2, or 3")));
+
+        verify(petInfoService, never()).addPet(any(), eq(100L));
     }
 
     @Test
