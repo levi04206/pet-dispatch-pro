@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -104,6 +105,18 @@ class OrdersControllerTest {
                 .andExpect(jsonPath("$.data").value("打卡成功，服务开始"));
 
         verify(ordersService).startService(20L, "https://example.com/start.jpg", 100L);
+    }
+
+    @Test
+    void startServiceShouldRejectBlankProofUrl() throws Exception {
+        mockMvc.perform(post("/api/orders/start")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"orderId\":20,\"proofUrl\":\"\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.msg", containsString("Proof URL cannot be blank")));
+
+        verify(ordersService, never()).startService(any(), any(), eq(100L));
     }
 
     @Test
@@ -236,6 +249,18 @@ class OrdersControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
                 .andExpect(jsonPath("$.msg", containsString("Rating must be between 1 and 5")));
+    }
+
+    @Test
+    void evaluateOrderShouldRejectMissingOrderId() throws Exception {
+        mockMvc.perform(post("/api/orders/evaluate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"rating\":5,\"content\":\"服务很好\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.msg", containsString("Order id is required")));
+
+        verify(ordersService, never()).evaluateOrder(any(), eq(100L));
     }
 
     @Test
