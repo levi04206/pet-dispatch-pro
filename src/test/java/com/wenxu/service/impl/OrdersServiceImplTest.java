@@ -3,6 +3,8 @@ package com.wenxu.service.impl;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.wenxu.common.OrderStatusEnum;
+import com.wenxu.common.SitterAuditStatusEnum;
+import com.wenxu.common.SitterWorkStatusEnum;
 import com.wenxu.converter.OrderConverter;
 import com.wenxu.dto.OrderCreateDTO;
 import com.wenxu.dto.OrderEvaluateDTO;
@@ -116,14 +118,35 @@ class OrdersServiceImplTest {
 
     @Test
     void getPublicPoolShouldExcludeCurrentUserOrders() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setAuditStatus(SitterAuditStatusEnum.APPROVED.getStatus());
+        sitter.setWorkStatus(SitterWorkStatusEnum.ACCEPTING.getStatus());
         Orders order = new Orders();
         order.setId(20L);
+
+        when(sitterMapper.selectOne(any())).thenReturn(sitter);
         when(ordersMapper.selectList(any())).thenReturn(List.of(order));
 
         List<Orders> orders = ordersService.getPublicPool(100L);
 
         assertEquals(List.of(order), orders);
         verify(ordersMapper).selectList(any());
+    }
+
+    @Test
+    void getPublicPoolShouldReturnEmptyWhenCurrentUserIsNotAvailableSitter() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setAuditStatus(SitterAuditStatusEnum.PENDING.getStatus());
+        sitter.setWorkStatus(SitterWorkStatusEnum.ACCEPTING.getStatus());
+
+        when(sitterMapper.selectOne(any())).thenReturn(sitter);
+
+        List<Orders> orders = ordersService.getPublicPool(100L);
+
+        assertTrue(orders.isEmpty());
+        verify(ordersMapper, never()).selectList(any());
     }
 
     @Test

@@ -83,6 +83,10 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public List<Orders> getPublicPool(Long userId) {
+        if (getAvailableSitter(userId) == null) {
+            return Collections.emptyList();
+        }
+
         LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Orders::getStatus, OrderStatusEnum.PENDING_ACCEPT.getStatus());
         queryWrapper.ne(Orders::getUserId, userId);
