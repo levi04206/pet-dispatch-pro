@@ -16,6 +16,17 @@ source docs/schema.sql;
 source docs/demo-data.sql;
 ```
 
+演示数据中常用固定 ID：
+
+- 用户：`1001`
+- 宠托师用户：`1002`
+- 管理员用户：`1003`
+- 宠物：`2001`
+- 宠托师档案：`3001`
+- 待接单订单：`4001`
+- 服务中订单：`4002`
+- 已完成订单：`4003`
+
 ## 2. 用户登录
 
 1. `GET /api/user/sendCode?phone=13800138001`
@@ -69,7 +80,7 @@ source docs/demo-data.sql;
 
 ```json
 {
-  "petId": 1,
+  "petId": 2001,
   "reserveTime": "2099-04-15T10:00:00",
   "totalAmount": 99.00,
   "distance": 3.5
@@ -84,7 +95,7 @@ source docs/demo-data.sql;
 
 ```json
 {
-  "orderId": 1,
+  "orderId": 4001,
   "proofUrl": "https://example.com/start-proof.jpg"
 }
 ```
@@ -94,7 +105,7 @@ source docs/demo-data.sql;
 
 ```json
 {
-  "orderId": 1,
+  "orderId": 4001,
   "proofUrl": "https://example.com/end-proof.jpg"
 }
 ```
@@ -103,7 +114,7 @@ source docs/demo-data.sql;
 
 ```json
 {
-  "orderId": 1,
+  "orderId": 4001,
   "rating": 5,
   "content": "服务很好，宠物状态稳定。"
 }
