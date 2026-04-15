@@ -105,6 +105,16 @@ class OrdersServiceImplTest {
     }
 
     @Test
+    void payOrderShouldReturnFalseWhenOrderIsNotFoundForCurrentUser() {
+        when(ordersMapper.selectOne(any())).thenReturn(null);
+
+        boolean paid = ordersService.payOrder("OD1001", 100L);
+
+        assertFalse(paid);
+        verify(ordersMapper, never()).updateById(any());
+    }
+
+    @Test
     void listMyOrdersShouldScopeQueryByCurrentUser() {
         Orders order = new Orders();
         order.setId(20L);
@@ -305,6 +315,36 @@ class OrdersServiceImplTest {
     }
 
     @Test
+    void grabOrderShouldReturnFalseWhenConcurrentOrderUpdateMisses() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setAuditStatus(SitterAuditStatusEnum.APPROVED.getStatus());
+        sitter.setWorkStatus(SitterWorkStatusEnum.ACCEPTING.getStatus());
+
+        when(sitterMapper.selectOne(any())).thenReturn(sitter);
+        when(ordersMapper.update(any(), any())).thenReturn(0);
+
+        boolean grabbed = ordersService.grabOrder(20L, 100L);
+
+        assertFalse(grabbed);
+        verify(sitterMapper, never()).update(isNull(), any(Wrapper.class));
+    }
+
+    @Test
+    void grabOrderShouldThrowWhenSitterStatusUpdateFailsAfterOrderUpdate() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setAuditStatus(SitterAuditStatusEnum.APPROVED.getStatus());
+        sitter.setWorkStatus(SitterWorkStatusEnum.ACCEPTING.getStatus());
+
+        when(sitterMapper.selectOne(any())).thenReturn(sitter);
+        when(ordersMapper.update(any(), any())).thenReturn(1);
+        when(sitterMapper.update(isNull(), any(Wrapper.class))).thenReturn(0);
+
+        assertThrows(IllegalStateException.class, () -> ordersService.grabOrder(20L, 100L));
+    }
+
+    @Test
     void grabOrderShouldRejectUnapprovedSitter() {
         Sitter sitter = new Sitter();
         sitter.setId(10L);
@@ -373,6 +413,20 @@ class OrdersServiceImplTest {
                 () -> assertTrue(wrapper.getSqlSet().contains("version = version + 1"))
         );
         verify(sitterMapper).update(isNull(), any(Wrapper.class));
+    }
+
+    @Test
+    void completeServiceShouldThrowWhenSitterStatsUpdateFailsAfterOrderUpdate() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setAuditStatus(SitterAuditStatusEnum.APPROVED.getStatus());
+
+        when(sitterMapper.selectOne(any())).thenReturn(sitter);
+        when(ordersMapper.update(any(), any())).thenReturn(1);
+        when(sitterMapper.update(isNull(), any(Wrapper.class))).thenReturn(0);
+
+        assertThrows(IllegalStateException.class,
+                () -> ordersService.completeService(20L, "end-proof.jpg", 100L));
     }
 
     @Test
