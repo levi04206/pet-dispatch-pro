@@ -76,4 +76,30 @@ class LoginInterceptorTest {
         assertFalse(allowed);
         assertEquals(401, response.getStatus());
     }
+
+    @Test
+    void preHandleShouldClearContextWhenTokenIsInvalid() throws Exception {
+        BaseContext.setCurrentId(100L);
+        BaseContext.setCurrentRole(UserRoleEnum.ADMIN.name());
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("token", "bad-token");
+        when(jwtUtils.parseToken("bad-token")).thenThrow(new RuntimeException("bad token"));
+
+        boolean allowed = loginInterceptor.preHandle(request, new MockHttpServletResponse(), new Object());
+
+        assertFalse(allowed);
+        assertEquals(null, BaseContext.getCurrentId());
+        assertEquals(null, BaseContext.getCurrentRole());
+    }
+
+    @Test
+    void afterCompletionShouldClearCurrentContext() throws Exception {
+        BaseContext.setCurrentId(100L);
+        BaseContext.setCurrentRole(UserRoleEnum.ADMIN.name());
+
+        loginInterceptor.afterCompletion(new MockHttpServletRequest(), new MockHttpServletResponse(), new Object(), null);
+
+        assertEquals(null, BaseContext.getCurrentId());
+        assertEquals(null, BaseContext.getCurrentRole());
+    }
 }

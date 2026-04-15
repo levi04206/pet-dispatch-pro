@@ -30,6 +30,7 @@ public class LoginInterceptor implements HandlerInterceptor {
 
             return true;
         } catch (Exception e) {
+            BaseContext.removeCurrentId();
             response.setStatus(401);
             return false;
         }
