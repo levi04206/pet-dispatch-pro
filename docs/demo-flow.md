@@ -28,6 +28,16 @@ source docs/demo-data.sql;
 ## 3. 宠物档案
 
 1. `POST /api/pet/add`
+
+```json
+{
+  "petName": "小福",
+  "petType": 2,
+  "breed": "柯基",
+  "weight": 10.5
+}
+```
+
 2. `GET /api/pet/list`
 3. `DELETE /api/pet/{id}`
 
@@ -36,26 +46,70 @@ source docs/demo-data.sql;
 ## 4. 宠托师入驻
 
 1. 普通用户调用 `POST /api/sitter/apply`
+
+```json
+{
+  "realName": "李师傅",
+  "phone": "13800138002",
+  "idCard": "330106199001011234",
+  "avatar": "https://example.com/avatar.jpg"
+}
+```
+
 2. 管理员调用 `GET /api/admin/sitter/pending` 查看待审核申请。
 3. 管理员调用 `POST /api/admin/sitter/audit?id=宠托师ID&auditStatus=1`
 4. 宠托师调用 `GET /api/sitter/me`
 5. 宠托师调用 `POST /api/sitter/workStatus?workStatus=1`
 
-演示重点：申请、管理员审核、角色升级、切换接单状态。
+演示重点：申请、管理员审核、角色升级、切换接单状态；`SitterVO` 会返回 `workStatusDesc` 和 `auditStatusDesc`，方便直接展示“接单中/审核通过”等状态。
 
 ## 5. 订单调度
 
 1. 用户调用 `POST /api/orders/create`
+
+```json
+{
+  "petId": 1,
+  "reserveTime": "2099-04-15T10:00:00",
+  "totalAmount": 99.00,
+  "distance": 3.5
+}
+```
+
 2. 用户调用 `POST /api/orders/pay?orderSn=订单号`
 3. 宠托师调用 `GET /api/orders/publicPool`
 4. 宠托师调用 `POST /api/orders/grab?orderId=订单ID`
 5. 宠托师上传凭证：`POST /api/common/upload`
 6. 宠托师调用 `POST /api/orders/start`
+
+```json
+{
+  "orderId": 1,
+  "proofUrl": "https://example.com/start-proof.jpg"
+}
+```
+
 7. 宠托师再次上传完成凭证。
 8. 宠托师调用 `POST /api/orders/complete`
+
+```json
+{
+  "orderId": 1,
+  "proofUrl": "https://example.com/end-proof.jpg"
+}
+```
+
 9. 用户调用 `POST /api/orders/evaluate`
 
-演示重点：公共订单池、抢单、履约打卡、评价闭环。
+```json
+{
+  "orderId": 1,
+  "rating": 5,
+  "content": "服务很好，宠物状态稳定。"
+}
+```
+
+演示重点：公共订单池、抢单、履约打卡、评价闭环；公共订单池仅审核通过且接单中的宠托师可见，订单出参会返回 `statusDesc`。
 
 ## 6. 查询和取消
 
