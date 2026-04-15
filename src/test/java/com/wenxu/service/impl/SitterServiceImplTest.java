@@ -17,6 +17,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -78,6 +79,7 @@ class SitterServiceImplTest {
 
         when(sitterMapper.selectById(10L)).thenReturn(sitter);
         when(sitterMapper.update(any(), any())).thenReturn(1);
+        when(userMapper.updateById(any(User.class))).thenReturn(1);
 
         boolean audited = sitterService.auditSitter(10L, 1);
 
@@ -95,12 +97,27 @@ class SitterServiceImplTest {
 
         when(sitterMapper.selectById(10L)).thenReturn(sitter);
         when(sitterMapper.update(any(), any())).thenReturn(1);
+        when(userMapper.updateById(any(User.class))).thenReturn(1);
 
         boolean audited = sitterService.auditSitter(10L, 1);
 
         assertTrue(audited);
         verify(userMapper).updateById(org.mockito.ArgumentMatchers.argThat(user ->
                 Long.valueOf(100L).equals(user.getId()) && UserRoleEnum.SITTER.name().equals(user.getRole())));
+    }
+
+    @Test
+    void auditSitterShouldThrowWhenUserRolePromotionFails() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setUserId(100L);
+        sitter.setAuditStatus(0);
+
+        when(sitterMapper.selectById(10L)).thenReturn(sitter);
+        when(sitterMapper.update(any(), any())).thenReturn(1);
+        when(userMapper.updateById(any(User.class))).thenReturn(0);
+
+        assertThrows(IllegalStateException.class, () -> sitterService.auditSitter(10L, 1));
     }
 
     @Test

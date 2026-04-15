@@ -14,6 +14,7 @@ import com.wenxu.mapper.UserMapper;
 import com.wenxu.service.SitterService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -48,6 +49,7 @@ public class SitterServiceImpl implements SitterService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean auditSitter(Long id, Integer auditStatus) {
         Sitter sitter = sitterMapper.selectById(id);
         if (sitter == null) {
@@ -68,7 +70,9 @@ public class SitterServiceImpl implements SitterService {
             User user = new User();
             user.setId(sitter.getUserId());
             user.setRole(UserRoleEnum.SITTER.name());
-            userMapper.updateById(user);
+            if (userMapper.updateById(user) <= 0) {
+                throw new IllegalStateException("用户角色升级失败");
+            }
         }
         return updated;
     }
