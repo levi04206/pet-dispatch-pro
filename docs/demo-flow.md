@@ -10,13 +10,13 @@
 source docs/schema.sql;
 ```
 
-如果需要演示数据，再执行：
+如需演示数据，再执行：
 
 ```sql
 source docs/demo-data.sql;
 ```
 
-演示数据中常用固定 ID：
+演示数据中的常用固定 ID：
 
 - 用户：`1001`
 - 宠托师用户：`1002`
@@ -68,11 +68,11 @@ source docs/demo-data.sql;
 ```
 
 2. 管理员调用 `GET /api/admin/sitter/pending` 查看待审核申请。
-3. 管理员调用 `POST /api/admin/sitter/audit?id=宠托师ID&auditStatus=1`
-4. 宠托师调用 `GET /api/sitter/me`
-5. 宠托师调用 `POST /api/sitter/workStatus?workStatus=1`
+3. 管理员调用 `POST /api/admin/sitter/audit?id=宠托师ID&auditStatus=1`。
+4. 宠托师调用 `GET /api/sitter/me`。
+5. 宠托师调用 `POST /api/sitter/workStatus?workStatus=1`。
 
-演示重点：申请、管理员审核、角色升级、切换接单状态；`SitterVO` 会返回 `workStatusDesc` 和 `auditStatusDesc`，方便直接展示“接单中/审核通过”等状态。
+演示重点：申请、管理员审核、角色升级、切换接单状态；`SitterVO` 会返回 `workStatusDesc` 和 `auditStatusDesc`。
 
 ## 5. 订单调度
 
@@ -87,11 +87,11 @@ source docs/demo-data.sql;
 }
 ```
 
-2. 用户调用 `POST /api/orders/pay?orderSn=订单号`
-3. 宠托师调用 `GET /api/orders/publicPool`
-4. 宠托师调用 `POST /api/orders/grab?orderId=订单ID`
-5. 宠托师上传凭证：`POST /api/common/upload`
-6. 宠托师调用 `POST /api/orders/start`
+2. 用户调用 `POST /api/orders/pay?orderSn=订单号`。
+3. 宠托师调用 `GET /api/orders/publicPool`。
+4. 宠托师调用 `POST /api/orders/grab?orderId=订单ID`。
+5. 宠托师上传凭证：`POST /api/common/upload`。
+6. 宠托师调用 `POST /api/orders/start`。
 
 ```json
 {
@@ -101,7 +101,7 @@ source docs/demo-data.sql;
 ```
 
 7. 宠托师再次上传完成凭证。
-8. 宠托师调用 `POST /api/orders/complete`
+8. 宠托师调用 `POST /api/orders/complete`。
 
 ```json
 {
@@ -110,7 +110,7 @@ source docs/demo-data.sql;
 }
 ```
 
-9. 用户调用 `POST /api/orders/evaluate`
+9. 用户调用 `POST /api/orders/evaluate`。
 
 ```json
 {
@@ -131,3 +131,15 @@ source docs/demo-data.sql;
 - 用户取消待支付/待接单订单：`POST /api/orders/cancel?orderId=订单ID`
 
 演示重点：订单查询按身份隔离，取消订单按状态机限制。
+
+## 7. 交付检查
+
+演示前执行：
+
+```bash
+mvn test
+git status --short
+```
+
+当前交付摘要见 `docs/final-summary.md`。
+

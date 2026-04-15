@@ -39,4 +39,14 @@ class AdminInterceptorTest {
         assertFalse(allowed);
         assertEquals(403, response.getStatus());
     }
+
+    @Test
+    void preHandleShouldRejectMissingRole() {
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        boolean allowed = adminInterceptor.preHandle(new MockHttpServletRequest(), response, new Object());
+
+        assertFalse(allowed);
+        assertEquals(403, response.getStatus());
+    }
 }
