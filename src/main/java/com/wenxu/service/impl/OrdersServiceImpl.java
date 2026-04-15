@@ -4,6 +4,8 @@ import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.wenxu.common.OrderStatusEnum;
+import com.wenxu.common.SitterAuditStatusEnum;
+import com.wenxu.common.SitterWorkStatusEnum;
 import com.wenxu.converter.OrderConverter;
 import com.wenxu.dto.OrderCreateDTO;
 import com.wenxu.dto.OrderEvaluateDTO;
@@ -25,10 +27,6 @@ import java.util.List;
 
 @Service
 public class OrdersServiceImpl implements OrdersService {
-
-    private static final int SITTER_AUDIT_APPROVED = 1;
-    private static final int SITTER_WORK_ACCEPTING = 1;
-    private static final int SITTER_WORK_SERVING = 2;
 
     @Resource
     private OrdersMapper ordersMapper;
@@ -179,7 +177,7 @@ public class OrdersServiceImpl implements OrdersService {
             return false;
         }
 
-        if (!updateSitterWorkStatus(sitter.getId(), SITTER_WORK_SERVING)) {
+        if (!updateSitterWorkStatus(sitter.getId(), SitterWorkStatusEnum.SERVING.getStatus())) {
             throw new IllegalStateException("宠托师工作状态更新失败");
         }
         return true;
@@ -225,7 +223,7 @@ public class OrdersServiceImpl implements OrdersService {
 
         LambdaUpdateWrapper<Sitter> sitterUpdateWrapper = new LambdaUpdateWrapper<>();
         sitterUpdateWrapper.eq(Sitter::getId, sitter.getId())
-                .set(Sitter::getWorkStatus, SITTER_WORK_ACCEPTING)
+                .set(Sitter::getWorkStatus, SitterWorkStatusEnum.ACCEPTING.getStatus())
                 .setSql("order_count = order_count + 1");
         if (sitterMapper.update(null, sitterUpdateWrapper) <= 0) {
             throw new IllegalStateException("宠托师履约统计更新失败");
@@ -238,7 +236,7 @@ public class OrdersServiceImpl implements OrdersService {
         if (sitter == null) {
             return null;
         }
-        if (!Integer.valueOf(SITTER_WORK_ACCEPTING).equals(sitter.getWorkStatus())) {
+        if (!SitterWorkStatusEnum.ACCEPTING.getStatus().equals(sitter.getWorkStatus())) {
             return null;
         }
         return sitter;
@@ -249,7 +247,7 @@ public class OrdersServiceImpl implements OrdersService {
         if (sitter == null) {
             return null;
         }
-        if (!Integer.valueOf(SITTER_AUDIT_APPROVED).equals(sitter.getAuditStatus())) {
+        if (!SitterAuditStatusEnum.APPROVED.getStatus().equals(sitter.getAuditStatus())) {
             return null;
         }
         return sitter;
