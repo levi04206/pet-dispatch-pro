@@ -10,7 +10,9 @@ public class SitterVO {
     private String realName;
     private String avatar;
     private Integer workStatus;
+    private String workStatusDesc;
     private Integer auditStatus;
+    private String auditStatusDesc;
     private Integer orderCount;
     private Double rating;
 }
