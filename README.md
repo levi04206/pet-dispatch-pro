@@ -34,6 +34,7 @@
 
 数据库结构参考：
 
+- `docs/db-setup.md` 说明全新建库、旧库升级和演示数据执行顺序。
 - `docs/schema.sql`
 - `docs/migrations/`
 - `docs/demo-data.sql` 提供少量演示数据，可用于本地串核心流程。

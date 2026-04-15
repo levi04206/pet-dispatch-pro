@@ -11,6 +11,7 @@
 - 第一轮急救修复已完成：宠物删除水平越权、抢单时 User.id 和 Sitter.id 混用。
 - 第二阶段基建推进中：已引入 DTO、Spring Validation、MapStruct，先覆盖宠物新增、宠托师申请、订单创建三个写接口。
 - 配置与交付基建推进中：已外置数据库、Redis、JWT 配置，新增本地配置示例和 `docs/schema.sql`。
+- 已补充数据库交付说明 `docs/db-setup.md`，区分全新建库、旧库按 migration 升级和演示数据执行顺序；迁移脚本已补齐目标库选择。
 - 第三阶段 Service 层重构已启动：宠物模块已从 Controller 直连 Mapper 调整为 Controller -> Service -> Mapper。
 - 宠托师申请与管理端审核已迁移到 `SitterServiceImpl`，Controller 只负责参数接收和返回包装。
 - 订单创建、支付、公共池、抢单、开始服务、完成服务已迁移到 `OrdersServiceImpl`，保留原有状态流转条件。
