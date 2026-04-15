@@ -1,5 +1,6 @@
 package com.wenxu.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.wenxu.common.UserRoleEnum;
 import com.wenxu.converter.SitterConverter;
 import com.wenxu.dto.SitterApplyDTO;
@@ -9,6 +10,7 @@ import com.wenxu.mapper.SitterMapper;
 import com.wenxu.mapper.UserMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -104,6 +106,25 @@ class SitterServiceImplTest {
         assertTrue(audited);
         verify(userMapper).updateById(org.mockito.ArgumentMatchers.argThat(user ->
                 Long.valueOf(100L).equals(user.getId()) && UserRoleEnum.SITTER.name().equals(user.getRole())));
+    }
+
+    @Test
+    void auditSitterShouldConditionUpdatePendingProfile() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setUserId(100L);
+        sitter.setAuditStatus(0);
+
+        when(sitterMapper.selectById(10L)).thenReturn(sitter);
+        when(sitterMapper.update(any(), any())).thenReturn(1);
+        when(userMapper.updateById(any(User.class))).thenReturn(1);
+
+        boolean audited = sitterService.auditSitter(10L, 1);
+
+        assertTrue(audited);
+        LambdaUpdateWrapper<Sitter> wrapper = captureSitterUpdateWrapper();
+        assertTrue(wrapper.getSqlSegment().contains("id"));
+        assertTrue(wrapper.getSqlSegment().contains("audit_status"));
     }
 
     @Test
@@ -206,5 +227,12 @@ class SitterServiceImplTest {
         boolean switched = sitterService.switchWorkStatus(100L, 1);
 
         assertFalse(switched);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private LambdaUpdateWrapper<Sitter> captureSitterUpdateWrapper() {
+        ArgumentCaptor<LambdaUpdateWrapper> captor = ArgumentCaptor.forClass(LambdaUpdateWrapper.class);
+        verify(sitterMapper).update(any(), captor.capture());
+        return captor.getValue();
     }
 }

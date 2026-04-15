@@ -61,6 +61,7 @@ public class SitterServiceImpl implements SitterService {
 
         LambdaUpdateWrapper<Sitter> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Sitter::getId, id)
+                .eq(Sitter::getAuditStatus, SitterAuditStatusEnum.PENDING.getStatus())
                 .set(Sitter::getAuditStatus, auditStatus);
         if (SitterAuditStatusEnum.APPROVED.getStatus().equals(auditStatus)) {
             updateWrapper.set(Sitter::getWorkStatus, SitterWorkStatusEnum.RESTING.getStatus());
