@@ -73,16 +73,6 @@ public class UserServiceImpl implements UserService {
         return jwtUtils.createToken(claims);
     }
 
-    @Override
-    public User testInsertAndQuery() {
-        User user = new User();
-        user.setPhone("13800138002");
-        user.setNickname("测试铲屎官");
-
-        userMapper.insert(user);
-        return userMapper.selectById(user.getId());
-    }
-
     private User registerUserWithPhone(String phone) {
         User user = new User();
         user.setPhone(phone);

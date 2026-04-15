@@ -1,6 +1,5 @@
 package com.wenxu.controller;
 
-import com.wenxu.converter.UserConverter;
 import com.wenxu.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,9 +22,6 @@ class UserControllerTest {
 
     @Mock
     private UserService userService;
-
-    @Mock
-    private UserConverter userConverter;
 
     @InjectMocks
     private UserController userController;
