@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -44,6 +45,18 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(1))
                 .andExpect(jsonPath("$.data").value("验证码发送成功"));
+    }
+
+    @Test
+    void sendCodeShouldReturnParamErrorWhenPhoneIsInvalid() throws Exception {
+        when(userService.sendCode("123")).thenReturn(false);
+
+        mockMvc.perform(get("/api/user/sendCode").param("phone", "123"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(400))
+                .andExpect(jsonPath("$.msg").value("参数校验错误"));
+
+        verify(userService).sendCode("123");
     }
 
     @Test

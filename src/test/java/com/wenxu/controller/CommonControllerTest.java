@@ -11,6 +11,8 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.io.IOException;
+
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -51,5 +53,30 @@ class CommonControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
                 .andExpect(jsonPath("$.msg").value("上传文件不能为空"));
+    }
+
+    @Test
+    void uploadShouldRejectBlankOriginalFilename() throws Exception {
+        MockMultipartFile file = new MockMultipartFile("file", "", "image/jpeg", "fake".getBytes());
+
+        mockMvc.perform(multipart("/api/common/upload").file(file))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.msg").value("上传文件名不能为空"));
+    }
+
+    @Test
+    void uploadShouldReturnErrorWhenOssUploadFails() throws Exception {
+        MockMultipartFile file = new MockMultipartFile("file", "proof.jpg", "image/jpeg", "fake".getBytes()) {
+            @Override
+            public byte[] getBytes() throws IOException {
+                throw new IOException("read failed");
+            }
+        };
+
+        mockMvc.perform(multipart("/api/common/upload").file(file))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.msg").value("文件上传失败"));
     }
 }
