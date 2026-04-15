@@ -28,4 +28,16 @@ public enum OrderStatusEnum {
     public String getDesc() {
         return desc;
     }
+
+    public static String getDescByStatus(Integer status) {
+        if (status == null) {
+            return null;
+        }
+        for (OrderStatusEnum statusEnum : values()) {
+            if (statusEnum.getStatus().equals(status)) {
+                return statusEnum.getDesc();
+            }
+        }
+        return null;
+    }
 }
