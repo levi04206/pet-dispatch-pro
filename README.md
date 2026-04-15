@@ -46,6 +46,7 @@
 - `docs/migrations/`
 - `docs/demo-data.sql` 提供少量演示数据，可用于本地串核心流程。
 - `docs/demo-flow.md` 提供核心业务演示步骤。
+- `docs/release-checklist.md` 提供演示或提交前的交付检查清单。
 
 ## 常用接口
 
