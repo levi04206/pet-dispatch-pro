@@ -32,6 +32,13 @@
 
 默认激活 `local` profile。复制 `src/main/resources/application-local.example.yml` 为 `application-local.yml`，填写本地数据库、Redis、JWT、OSS 配置。
 
+本地启动前确认：
+
+1. MySQL 已创建 `pet_dispatch_pro` 库并执行数据库脚本。
+2. Redis 已启动，默认地址为 `127.0.0.1:6379`。
+3. `application-local.yml` 已填写数据库密码和 JWT 密钥。
+4. 如需测试真实上传，填写 OSS 配置；只跑接口和单测可以先留空。
+
 数据库结构参考：
 
 - `docs/db-setup.md` 说明全新建库、旧库升级和演示数据执行顺序。
