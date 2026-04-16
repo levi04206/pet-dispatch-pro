@@ -44,8 +44,11 @@ class SitterServiceImplTest {
     @Test
     void applySitterShouldInitializePendingProfile() {
         SitterApplyDTO dto = new SitterApplyDTO();
+        dto.setPhone("13800138001");
         Sitter mappedSitter = new Sitter();
+        User user = normalUser(100L, "13800138001");
 
+        when(userMapper.selectById(100L)).thenReturn(user);
         when(sitterMapper.selectCount(any())).thenReturn(0L);
         when(sitterConverter.toEntity(dto)).thenReturn(mappedSitter);
         when(sitterMapper.insert(mappedSitter)).thenReturn(1);
@@ -63,12 +66,43 @@ class SitterServiceImplTest {
 
     @Test
     void applySitterShouldRejectDuplicateUserProfile() {
+        SitterApplyDTO dto = new SitterApplyDTO();
+        dto.setPhone("13800138001");
+        when(userMapper.selectById(100L)).thenReturn(normalUser(100L, "13800138001"));
         when(sitterMapper.selectCount(any())).thenReturn(1L);
 
-        boolean applied = sitterService.applySitter(new SitterApplyDTO(), 100L);
+        boolean applied = sitterService.applySitter(dto, 100L);
 
         assertFalse(applied);
         verify(sitterConverter, never()).toEntity(any());
+        verify(sitterMapper, never()).insert(any());
+    }
+
+    @Test
+    void applySitterShouldRejectWhenCurrentUserIsAlreadySitter() {
+        SitterApplyDTO dto = new SitterApplyDTO();
+        dto.setPhone("13800138002");
+        User user = normalUser(100L, "13800138002");
+        user.setRole(UserRoleEnum.SITTER.name());
+        when(userMapper.selectById(100L)).thenReturn(user);
+
+        boolean applied = sitterService.applySitter(dto, 100L);
+
+        assertFalse(applied);
+        verify(sitterMapper, never()).selectCount(any());
+        verify(sitterMapper, never()).insert(any());
+    }
+
+    @Test
+    void applySitterShouldRejectWhenApplyPhoneDoesNotMatchLoginUser() {
+        SitterApplyDTO dto = new SitterApplyDTO();
+        dto.setPhone("13800138002");
+        when(userMapper.selectById(100L)).thenReturn(normalUser(100L, "13800138001"));
+
+        boolean applied = sitterService.applySitter(dto, 100L);
+
+        assertFalse(applied);
+        verify(sitterMapper, never()).selectCount(any());
         verify(sitterMapper, never()).insert(any());
     }
 
@@ -234,5 +268,14 @@ class SitterServiceImplTest {
         ArgumentCaptor<LambdaUpdateWrapper> captor = ArgumentCaptor.forClass(LambdaUpdateWrapper.class);
         verify(sitterMapper).update(any(), captor.capture());
         return captor.getValue();
+    }
+
+    private User normalUser(Long id, String phone) {
+        User user = new User();
+        user.setId(id);
+        user.setPhone(phone);
+        user.setStatus(1);
+        user.setRole(UserRoleEnum.USER.name());
+        return user;
     }
 }

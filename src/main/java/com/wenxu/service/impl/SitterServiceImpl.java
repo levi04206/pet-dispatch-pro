@@ -21,6 +21,8 @@ import java.util.List;
 @Service
 public class SitterServiceImpl implements SitterService {
 
+    private static final int USER_STATUS_NORMAL = 1;
+
     @Resource
     private SitterMapper sitterMapper;
 
@@ -32,6 +34,18 @@ public class SitterServiceImpl implements SitterService {
 
     @Override
     public boolean applySitter(SitterApplyDTO sitterApplyDTO, Long userId) {
+        User currentUser = userMapper.selectById(userId);
+        // 只有正常状态的普通用户可以提交入驻申请；已是宠托师或管理员不能重复进入申请流。
+        if (currentUser == null
+                || !Integer.valueOf(USER_STATUS_NORMAL).equals(currentUser.getStatus())
+                || !UserRoleEnum.USER.name().equals(currentUser.getRole())) {
+            return false;
+        }
+        // 申请手机号必须和当前登录用户一致，避免用 A 用户登录却提交 B 手机号的宠托师档案。
+        if (!sitterApplyDTO.getPhone().equals(currentUser.getPhone())) {
+            return false;
+        }
+
         LambdaQueryWrapper<Sitter> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Sitter::getUserId, userId);
         // 一个用户只允许存在一份宠托师档案，避免重复申请。

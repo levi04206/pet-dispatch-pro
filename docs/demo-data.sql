@@ -4,7 +4,8 @@ INSERT INTO `user` (`id`, `phone`, `nickname`, `status`, `role`)
 VALUES
     (1001, '13800138001', '演示用户', 1, 'USER'),
     (1002, '13800138002', '演示宠托师', 1, 'SITTER'),
-    (1003, '13800138003', '演示管理员', 1, 'ADMIN')
+    (1003, '13800138003', '演示管理员', 1, 'ADMIN'),
+    (1004, '13800138004', '待审核申请用户', 1, 'USER')
 ON DUPLICATE KEY UPDATE
     `nickname` = VALUES(`nickname`),
     `status` = VALUES(`status`),
@@ -22,7 +23,8 @@ ON DUPLICATE KEY UPDATE
 
 INSERT INTO `sitter` (`id`, `user_id`, `real_name`, `phone`, `id_card`, `rating`, `order_count`, `work_status`, `audit_status`)
 VALUES
-    (3001, 1002, '张三', '13800138002', '110101199001010011', 5.00, 0, 1, 1)
+    (3001, 1002, '张三', '13800138002', '110101199001010011', 5.00, 0, 1, 1),
+    (3002, 1004, '王待审', '13800138004', '110101199002020022', 5.00, 0, 0, 0)
 ON DUPLICATE KEY UPDATE
     `user_id` = VALUES(`user_id`),
     `real_name` = VALUES(`real_name`),
