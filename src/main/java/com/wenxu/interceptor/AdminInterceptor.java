@@ -12,6 +12,7 @@ public class AdminInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        // 管理端接口只允许 ADMIN 角色访问。
         if (UserRoleEnum.ADMIN.name().equals(BaseContext.getCurrentRole())) {
             return true;
         }

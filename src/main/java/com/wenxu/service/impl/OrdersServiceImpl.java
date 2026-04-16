@@ -42,10 +42,12 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public Orders createOrder(OrderCreateDTO orderCreateDTO, Long userId) {
+        // 下单前校验宠物归属，避免用户拿别人的宠物档案创建订单。
         if (!isMyPet(orderCreateDTO.getPetId(), userId)) {
             throw new IllegalArgumentException("宠物不存在或无权下单");
         }
 
+        // 订单创建后先进入待支付状态，支付后才进入公共订单池。
         Orders orders = orderConverter.toEntity(orderCreateDTO);
         orders.setUserId(userId);
         orders.setOrderSn("OD" + IdUtil.getSnowflakeNextIdStr());
@@ -69,6 +71,7 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public boolean payOrder(String orderSn, Long userId) {
+        // 支付时按订单号和当前用户一起查询，避免通过订单号支付他人订单。
         Orders order = ordersMapper.selectOne(new LambdaQueryWrapper<Orders>()
                 .eq(Orders::getOrderSn, orderSn)
                 .eq(Orders::getUserId, userId));
@@ -83,12 +86,14 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public List<Orders> getPublicPool(Long userId) {
+        // 只有审核通过且处于接单中的宠托师可以查看公共订单池。
         if (getAvailableSitter(userId) == null) {
             return Collections.emptyList();
         }
 
         LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Orders::getStatus, OrderStatusEnum.PENDING_ACCEPT.getStatus());
+        // 排除自己发布的订单，避免宠托师身份用户自接单。
         queryWrapper.ne(Orders::getUserId, userId);
         queryWrapper.orderByDesc(Orders::getCreateTime);
         return ordersMapper.selectList(queryWrapper);
@@ -136,6 +141,7 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public boolean cancelOrder(Long orderId, Long userId) {
+        // 取消订单必须同时满足：当前用户创建、订单处于待支付或待接单。
         LambdaUpdateWrapper<Orders> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Orders::getId, orderId)
                 .eq(Orders::getUserId, userId)
@@ -149,6 +155,7 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public boolean evaluateOrder(OrderEvaluateDTO orderEvaluateDTO, Long userId) {
+        // 评价只允许订单创建人在服务完成后提交一次，提交后状态进入已评价。
         LambdaUpdateWrapper<Orders> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Orders::getId, orderEvaluateDTO.getOrderId())
                 .eq(Orders::getUserId, userId)
@@ -169,6 +176,7 @@ public class OrdersServiceImpl implements OrdersService {
             return false;
         }
 
+        // 抢单使用条件更新：订单仍待接单、不是自己的订单，才能绑定当前宠托师。
         LambdaUpdateWrapper<Orders> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Orders::getId, orderId)
                 .ne(Orders::getUserId, userId)
@@ -181,6 +189,7 @@ public class OrdersServiceImpl implements OrdersService {
             return false;
         }
 
+        // 订单绑定成功后，宠托师进入服务中；失败则抛异常回滚订单更新。
         if (!updateSitterWorkStatus(sitter.getId(), SitterWorkStatusEnum.SERVING.getStatus())) {
             throw new IllegalStateException("宠托师工作状态更新失败");
         }
@@ -194,6 +203,7 @@ public class OrdersServiceImpl implements OrdersService {
             return false;
         }
 
+        // 开始服务必须由承接该订单的宠托师操作，并且订单当前处于已接单状态。
         LambdaUpdateWrapper<Orders> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Orders::getId, orderId)
                 .eq(Orders::getSitterId, sitter.getId())
@@ -213,6 +223,7 @@ public class OrdersServiceImpl implements OrdersService {
             return false;
         }
 
+        // 完成服务必须由承接该订单的宠托师操作，并且订单当前处于服务中状态。
         LambdaUpdateWrapper<Orders> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Orders::getId, orderId)
                 .eq(Orders::getSitterId, sitter.getId())
@@ -225,6 +236,7 @@ public class OrdersServiceImpl implements OrdersService {
             return false;
         }
 
+        // 订单完成后，宠托师重新回到接单中，并累计接单数量。
         LambdaUpdateWrapper<Sitter> sitterUpdateWrapper = new LambdaUpdateWrapper<>();
         sitterUpdateWrapper.eq(Sitter::getId, sitter.getId())
                 .set(Sitter::getWorkStatus, SitterWorkStatusEnum.ACCEPTING.getStatus())
@@ -236,6 +248,7 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     private Sitter getAvailableSitter(Long userId) {
+        // 可接单宠托师 = 审核通过 + 工作状态为接单中。
         Sitter sitter = getApprovedSitter(userId);
         if (sitter == null) {
             return null;
@@ -247,6 +260,7 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     private Sitter getApprovedSitter(Long userId) {
+        // 宠托师权限统一从当前用户绑定的 sitter 档案解析，避免 user.id 和 sitter.id 混用。
         Sitter sitter = getSitterByUserId(userId);
         if (sitter == null) {
             return null;

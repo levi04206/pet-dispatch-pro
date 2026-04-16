@@ -30,6 +30,9 @@ public class PetInfoController {
     @Resource
     private PetInfoConverter petInfoConverter;
 
+    /**
+     * 新增当前用户的宠物档案。
+     */
     @PostMapping("/add")
     public Result<String> addPet(@Valid @RequestBody PetInfoAddDTO petInfoAddDTO) {
         Long userId = BaseContext.getCurrentId();
@@ -37,6 +40,9 @@ public class PetInfoController {
         return Result.success(ApiMessages.PET_ADD_SUCCESS);
     }
 
+    /**
+     * 查询当前用户自己的宠物列表。
+     */
     @GetMapping("/list")
     public Result<List<PetInfoVO>> listMyPets() {
         Long userId = BaseContext.getCurrentId();
@@ -44,6 +50,9 @@ public class PetInfoController {
         return Result.success(petInfoConverter.toVOList(list));
     }
 
+    /**
+     * 删除当前用户自己的宠物档案，避免删除他人宠物。
+     */
     @DeleteMapping("/{id}")
     public Result<String> deletePet(@PathVariable Long id) {
         Long userId = BaseContext.getCurrentId();

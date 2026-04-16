@@ -20,6 +20,7 @@ public class LoginInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String token = request.getHeader("token");
         try {
+            // 解析 token 后，把当前用户身份写入线程上下文，Controller 和 Service 通过 BaseContext 获取。
             Claims claims = jwtUtils.parseToken(token);
             Long userId = Long.valueOf(claims.get("userId").toString());
             Object roleClaim = claims.get("role");
@@ -30,6 +31,7 @@ public class LoginInterceptor implements HandlerInterceptor {
 
             return true;
         } catch (Exception e) {
+            // token 无效时清理上下文，避免线程复用导致旧身份残留。
             BaseContext.removeCurrentId();
             response.setStatus(401);
             return false;
@@ -38,6 +40,7 @@ public class LoginInterceptor implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        // 请求结束后清理 ThreadLocal，防止当前用户信息影响下一次请求。
         BaseContext.removeCurrentId();
     }
 }

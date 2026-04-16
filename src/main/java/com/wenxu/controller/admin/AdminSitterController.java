@@ -24,11 +24,17 @@ public class AdminSitterController {
     @Resource
     private SitterConverter sitterConverter;
 
+    /**
+     * 管理员查看待审核的宠托师申请列表。
+     */
     @GetMapping("/pending")
     public Result<List<SitterVO>> listPendingApplications() {
         return Result.success(sitterConverter.toVOList(sitterService.listPendingApplications()));
     }
 
+    /**
+     * 管理员审核宠托师申请：1 通过，2 驳回。
+     */
     @PostMapping("/audit")
     public Result<String> auditSitter(@RequestParam Long id, @RequestParam Integer auditStatus) {
         if (auditStatus != 1 && auditStatus != 2) {

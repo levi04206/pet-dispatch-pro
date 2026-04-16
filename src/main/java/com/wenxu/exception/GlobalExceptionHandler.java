@@ -15,6 +15,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Result<String> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+        // JSON 请求体参数校验失败时，返回第一个字段错误，方便前端直接展示。
         String message = ex.getBindingResult().getFieldErrors().stream()
                 .findFirst()
                 .map(fieldError -> fieldError.getDefaultMessage())
@@ -24,6 +25,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
     public Result<String> handleConstraintViolation(ConstraintViolationException ex) {
+        // Query 参数或 Path 参数校验失败时，返回第一个约束错误。
         String message = ex.getConstraintViolations().stream()
                 .findFirst()
                 .map(violation -> violation.getMessage())
@@ -43,6 +45,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public Result<String> handleException(Exception ex) {
+        // 未预期异常只记录日志，响应给前端统一兜底文案，避免泄露内部细节。
         log.error("Unhandled exception", ex);
         return Result.error(INTERNAL_ERROR_MESSAGE);
     }

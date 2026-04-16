@@ -32,6 +32,9 @@ public class OrdersController {
     @Resource
     private OrderConverter orderConverter;
 
+    /**
+     * 用户创建订单，订单初始状态为待支付。
+     */
     @PostMapping("/create")
     public Result<OrderVO> createOrder(@Valid @RequestBody OrderCreateDTO orderCreateDTO) {
         Long userId = BaseContext.getCurrentId();
@@ -39,6 +42,9 @@ public class OrdersController {
         return Result.success(orderConverter.toVO(orders));
     }
 
+    /**
+     * 用户模拟支付订单，支付后订单进入公共待接单池。
+     */
     @PostMapping("/pay")
     public Result<String> payOrder(@RequestParam String orderSn) {
         Long userId = BaseContext.getCurrentId();
@@ -46,18 +52,27 @@ public class OrdersController {
         return paid ? Result.success(ApiMessages.ORDER_PAY_SUCCESS) : Result.error(ApiMessages.ORDER_PAY_FAILED);
     }
 
+    /**
+     * 宠托师查看公共订单池。
+     */
     @GetMapping("/publicPool")
     public Result<List<OrderVO>> getPublicPool() {
         Long userId = BaseContext.getCurrentId();
         return Result.success(orderConverter.toVOList(ordersService.getPublicPool(userId)));
     }
 
+    /**
+     * 用户查看自己创建的订单列表。
+     */
     @GetMapping("/my")
     public Result<List<OrderVO>> listMyOrders() {
         Long userId = BaseContext.getCurrentId();
         return Result.success(orderConverter.toVOList(ordersService.listMyOrders(userId)));
     }
 
+    /**
+     * 用户查看自己的订单详情。
+     */
     @GetMapping("/{orderId}")
     public Result<OrderVO> getMyOrderDetail(@PathVariable Long orderId) {
         Long userId = BaseContext.getCurrentId();
@@ -68,12 +83,18 @@ public class OrdersController {
         return Result.success(orderConverter.toVO(orders));
     }
 
+    /**
+     * 宠托师查看自己承接的订单列表。
+     */
     @GetMapping("/sitter/my")
     public Result<List<OrderVO>> listMyServiceOrders() {
         Long userId = BaseContext.getCurrentId();
         return Result.success(orderConverter.toVOList(ordersService.listMyServiceOrders(userId)));
     }
 
+    /**
+     * 宠托师查看自己承接的订单详情。
+     */
     @GetMapping("/sitter/{orderId}")
     public Result<OrderVO> getMyServiceOrderDetail(@PathVariable Long orderId) {
         Long userId = BaseContext.getCurrentId();
@@ -84,6 +105,9 @@ public class OrdersController {
         return Result.success(orderConverter.toVO(orders));
     }
 
+    /**
+     * 用户取消待支付或待接单订单。
+     */
     @PostMapping("/cancel")
     public Result<String> cancelOrder(@RequestParam Long orderId) {
         Long userId = BaseContext.getCurrentId();
@@ -91,6 +115,9 @@ public class OrdersController {
         return canceled ? Result.success(ApiMessages.ORDER_CANCEL_SUCCESS) : Result.error(ApiMessages.ORDER_CANCEL_FAILED);
     }
 
+    /**
+     * 用户评价已完成服务的订单。
+     */
     @PostMapping("/evaluate")
     public Result<String> evaluateOrder(@Valid @RequestBody OrderEvaluateDTO orderEvaluateDTO) {
         Long userId = BaseContext.getCurrentId();
@@ -98,6 +125,9 @@ public class OrdersController {
         return evaluated ? Result.success(ApiMessages.ORDER_EVALUATE_SUCCESS) : Result.error(ApiMessages.ORDER_EVALUATE_FAILED);
     }
 
+    /**
+     * 宠托师抢单，将公共订单绑定到当前宠托师。
+     */
     @PostMapping("/grab")
     public Result<String> grabOrder(@RequestParam Long orderId) {
         Long userId = BaseContext.getCurrentId();
@@ -105,6 +135,9 @@ public class OrdersController {
         return grabbed ? Result.success(ApiMessages.ORDER_GRAB_SUCCESS) : Result.error(ApiMessages.ORDER_GRAB_FAILED);
     }
 
+    /**
+     * 宠托师开始服务，并记录开始履约凭证。
+     */
     @PostMapping("/start")
     public Result<String> startService(@Valid @RequestBody OrderProofDTO orderProofDTO) {
         Long userId = BaseContext.getCurrentId();
@@ -112,6 +145,9 @@ public class OrdersController {
         return started ? Result.success(ApiMessages.ORDER_START_SUCCESS) : Result.error(ApiMessages.ORDER_OPERATION_FAILED);
     }
 
+    /**
+     * 宠托师完成服务，并记录完成履约凭证。
+     */
     @PostMapping("/complete")
     public Result<String> completeService(@Valid @RequestBody OrderProofDTO orderProofDTO) {
         Long userId = BaseContext.getCurrentId();

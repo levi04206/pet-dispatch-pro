@@ -27,6 +27,9 @@ public class SitterController {
     @Resource
     private SitterConverter sitterConverter;
 
+    /**
+     * 用户提交宠托师入驻申请。
+     */
     @PostMapping("/apply")
     public Result<String> applySitter(@Valid @RequestBody SitterApplyDTO sitterApplyDTO) {
         Long currentUserId = BaseContext.getCurrentId();
@@ -37,6 +40,9 @@ public class SitterController {
         return Result.success(ApiMessages.SITTER_APPLY_SUCCESS);
     }
 
+    /**
+     * 查看当前用户绑定的宠托师工作档案。
+     */
     @GetMapping("/me")
     public Result<SitterVO> getMyProfile() {
         Long currentUserId = BaseContext.getCurrentId();
@@ -47,6 +53,9 @@ public class SitterController {
         return Result.success(sitterConverter.toVO(sitter));
     }
 
+    /**
+     * 切换宠托师工作状态：0 休息中，1 接单中。
+     */
     @PostMapping("/workStatus")
     public Result<String> switchWorkStatus(@RequestParam Integer workStatus) {
         Long currentUserId = BaseContext.getCurrentId();

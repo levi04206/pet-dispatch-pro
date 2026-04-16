@@ -23,7 +23,7 @@ public class CommonController {
     private AliOssUtil aliOssUtil;
 
     /**
-     * 通用文件上传接口
+     * 通用文件上传接口，主要用于订单开始/完成服务时上传履约凭证。
      */
     @PostMapping("/upload")
     public Result<String> upload(@RequestParam MultipartFile file) {

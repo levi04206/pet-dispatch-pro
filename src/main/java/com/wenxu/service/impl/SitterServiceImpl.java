@@ -34,10 +34,12 @@ public class SitterServiceImpl implements SitterService {
     public boolean applySitter(SitterApplyDTO sitterApplyDTO, Long userId) {
         LambdaQueryWrapper<Sitter> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Sitter::getUserId, userId);
+        // 一个用户只允许存在一份宠托师档案，避免重复申请。
         if (sitterMapper.selectCount(queryWrapper) > 0) {
             return false;
         }
 
+        // 新申请默认待审核、休息中，审核通过后才能切换为接单中。
         Sitter sitter = sitterConverter.toEntity(sitterApplyDTO);
         sitter.setUserId(userId);
         sitter.setAuditStatus(SitterAuditStatusEnum.PENDING.getStatus());
@@ -59,6 +61,7 @@ public class SitterServiceImpl implements SitterService {
             return false;
         }
 
+        // 按“id + 待审核状态”条件更新，防止并发重复审核同一条申请。
         LambdaUpdateWrapper<Sitter> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Sitter::getId, id)
                 .eq(Sitter::getAuditStatus, SitterAuditStatusEnum.PENDING.getStatus())
@@ -68,6 +71,7 @@ public class SitterServiceImpl implements SitterService {
         }
         boolean updated = sitterMapper.update(null, updateWrapper) > 0;
         if (updated && SitterAuditStatusEnum.APPROVED.getStatus().equals(auditStatus)) {
+            // 审核通过后同步升级用户角色；失败时抛异常触发事务回滚，避免半完成状态。
             User user = new User();
             user.setId(sitter.getUserId());
             user.setRole(UserRoleEnum.SITTER.name());
@@ -94,11 +98,13 @@ public class SitterServiceImpl implements SitterService {
 
     @Override
     public boolean switchWorkStatus(Long userId, Integer workStatus) {
+        // 工作状态只允许在“休息中”和“接单中”之间切换。
         if (!SitterWorkStatusEnum.RESTING.getStatus().equals(workStatus)
                 && !SitterWorkStatusEnum.ACCEPTING.getStatus().equals(workStatus)) {
             return false;
         }
 
+        // 只有审核通过的宠托师可以切换工作状态。
         LambdaUpdateWrapper<Sitter> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Sitter::getUserId, userId)
                 .eq(Sitter::getAuditStatus, SitterAuditStatusEnum.APPROVED.getStatus())

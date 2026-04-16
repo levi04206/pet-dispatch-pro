@@ -18,6 +18,9 @@ public class UserController {
     @Resource
     private UserService userService;
 
+    /**
+     * 发送手机验证码。
+     */
     @GetMapping("/sendCode")
     public Result<String> sendCode(@RequestParam String phone) {
         boolean sent = userService.sendCode(phone);
@@ -27,6 +30,9 @@ public class UserController {
         return Result.success(ApiMessages.CODE_SENT);
     }
 
+    /**
+     * 用户登录，验证码正确后返回 JWT。
+     */
     @PostMapping("/login")
     public Result<String> login(@RequestParam String phone, @RequestParam String code) {
         String token = userService.login(phone, code);
