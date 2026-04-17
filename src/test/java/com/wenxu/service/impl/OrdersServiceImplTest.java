@@ -20,6 +20,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -49,6 +51,12 @@ class OrdersServiceImplTest {
 
     @Mock
     private OrderConverter orderConverter;
+
+    @Mock
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Mock
+    private ZSetOperations<String, String> zSetOperations;
 
     @InjectMocks
     private OrdersServiceImpl ordersService;
@@ -265,7 +273,18 @@ class OrdersServiceImplTest {
         dto.setOrderId(20L);
         dto.setRating(5);
         dto.setContent("服务很好");
+        Orders order = new Orders();
+        order.setId(20L);
+        order.setSitterId(10L);
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setRating(4.0);
+        sitter.setOrderCount(2);
+        when(ordersMapper.selectOne(any())).thenReturn(order);
         when(ordersMapper.update(any(), any())).thenReturn(1);
+        when(sitterMapper.selectById(10L)).thenReturn(sitter);
+        when(sitterMapper.updateById(any(Sitter.class))).thenReturn(1);
+        when(stringRedisTemplate.opsForZSet()).thenReturn(zSetOperations);
 
         boolean evaluated = ordersService.evaluateOrder(dto, 100L);
 
@@ -280,6 +299,9 @@ class OrdersServiceImplTest {
                 () -> assertTrue(wrapper.getSqlSet().contains("evaluate_time")),
                 () -> assertTrue(wrapper.getSqlSet().contains("version = version + 1"))
         );
+        verify(sitterMapper).updateById(org.mockito.ArgumentMatchers.argThat(update ->
+                Long.valueOf(10L).equals(update.getId()) && Double.valueOf(4.5).equals(update.getRating())));
+        verify(zSetOperations).add("pet:sitter:rank:rating", "10", 4.5);
     }
 
     @Test
@@ -287,11 +309,29 @@ class OrdersServiceImplTest {
         OrderEvaluateDTO dto = new OrderEvaluateDTO();
         dto.setOrderId(20L);
         dto.setRating(5);
+        Orders order = new Orders();
+        order.setId(20L);
+        order.setSitterId(10L);
+        when(ordersMapper.selectOne(any())).thenReturn(order);
         when(ordersMapper.update(any(), any())).thenReturn(0);
 
         boolean evaluated = ordersService.evaluateOrder(dto, 100L);
 
         assertFalse(evaluated);
+        verify(sitterMapper, never()).updateById(any());
+    }
+
+    @Test
+    void evaluateOrderShouldReturnFalseWhenCompletedOrderNotFound() {
+        OrderEvaluateDTO dto = new OrderEvaluateDTO();
+        dto.setOrderId(20L);
+        dto.setRating(5);
+        when(ordersMapper.selectOne(any())).thenReturn(null);
+
+        boolean evaluated = ordersService.evaluateOrder(dto, 100L);
+
+        assertFalse(evaluated);
+        verify(ordersMapper, never()).update(any(), any());
     }
 
     @Test

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.wenxu.common.OrderStatusEnum;
 import com.wenxu.common.SitterAuditStatusEnum;
 import com.wenxu.common.SitterWorkStatusEnum;
+import com.wenxu.constant.RedisConstants;
 import com.wenxu.converter.OrderConverter;
 import com.wenxu.dto.OrderCreateDTO;
 import com.wenxu.dto.OrderEvaluateDTO;
@@ -17,10 +18,12 @@ import com.wenxu.mapper.PetInfoMapper;
 import com.wenxu.mapper.SitterMapper;
 import com.wenxu.service.OrdersService;
 import jakarta.annotation.Resource;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -39,6 +42,9 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Resource
     private OrderConverter orderConverter;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public Orders createOrder(OrderCreateDTO orderCreateDTO, Long userId) {
@@ -154,7 +160,16 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean evaluateOrder(OrderEvaluateDTO orderEvaluateDTO, Long userId) {
+        Orders order = ordersMapper.selectOne(new LambdaQueryWrapper<Orders>()
+                .eq(Orders::getId, orderEvaluateDTO.getOrderId())
+                .eq(Orders::getUserId, userId)
+                .eq(Orders::getStatus, OrderStatusEnum.COMPLETED.getStatus()));
+        if (order == null || order.getSitterId() == null) {
+            return false;
+        }
+
         // 评价只允许订单创建人在服务完成后提交一次，提交后状态进入已评价。
         LambdaUpdateWrapper<Orders> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Orders::getId, orderEvaluateDTO.getOrderId())
@@ -165,7 +180,12 @@ public class OrdersServiceImpl implements OrdersService {
                 .set(Orders::getEvaluateContent, orderEvaluateDTO.getContent())
                 .set(Orders::getEvaluateTime, LocalDateTime.now())
                 .setSql("version = version + 1");
-        return ordersMapper.update(null, updateWrapper) > 0;
+        if (ordersMapper.update(null, updateWrapper) <= 0) {
+            return false;
+        }
+
+        refreshSitterRating(order.getSitterId(), orderEvaluateDTO.getRating());
+        return true;
     }
 
     @Override
@@ -281,6 +301,35 @@ public class OrdersServiceImpl implements OrdersService {
         updateWrapper.eq(Sitter::getId, sitterId)
                 .set(Sitter::getWorkStatus, workStatus);
         return sitterMapper.update(null, updateWrapper) > 0;
+    }
+
+    private void refreshSitterRating(Long sitterId, Integer rating) {
+        Sitter sitter = sitterMapper.selectById(sitterId);
+        if (sitter == null) {
+            throw new IllegalStateException("宠托师不存在，无法更新评分");
+        }
+
+        int completedCount = sitter.getOrderCount() == null ? 0 : sitter.getOrderCount();
+        double oldRating = sitter.getRating() == null ? 5.0 : sitter.getRating();
+        double newRating = calculateAverageRating(oldRating, completedCount, rating);
+
+        Sitter update = new Sitter();
+        update.setId(sitterId);
+        update.setRating(newRating);
+        if (sitterMapper.updateById(update) <= 0) {
+            throw new IllegalStateException("宠托师评分更新失败");
+        }
+        stringRedisTemplate.opsForZSet().add(RedisConstants.SITTER_RANK_RATING_KEY, sitterId.toString(), newRating);
+    }
+
+    private double calculateAverageRating(double oldRating, int completedCount, int newRating) {
+        if (completedCount <= 0) {
+            return newRating;
+        }
+        BigDecimal total = BigDecimal.valueOf(oldRating)
+                .multiply(BigDecimal.valueOf(Math.max(completedCount - 1, 0)))
+                .add(BigDecimal.valueOf(newRating));
+        return total.divide(BigDecimal.valueOf(completedCount), 2, RoundingMode.HALF_UP).doubleValue();
     }
 
     private boolean isMyPet(Long petId, Long userId) {

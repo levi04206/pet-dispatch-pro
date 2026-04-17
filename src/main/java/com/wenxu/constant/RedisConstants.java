@@ -14,5 +14,8 @@ public class RedisConstants {
     /** 登录验证码的过期时间 (分钟) */
     public static final Long LOGIN_CODE_TTL = 5L;
 
-    // (以后如果有 token、订单缓存等，全往这里面加)
+    // --- 宠托师推荐模块 ---
+
+    /** 宠托师评分排行榜，score 为综合评分，member 为 sitterId */
+    public static final String SITTER_RANK_RATING_KEY = "pet:sitter:rank:rating";
 }
