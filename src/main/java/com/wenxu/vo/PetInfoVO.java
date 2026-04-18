@@ -10,4 +10,6 @@ public class PetInfoVO {
     private Integer petType;
     private String breed;
     private Double weight;
+    private Integer isNeutered;
+    private Integer aggressiveTag;
 }

@@ -27,6 +27,8 @@ public class PetInfoServiceImpl implements PetInfoService {
     public void addPet(PetInfoAddDTO petInfoAddDTO, Long userId) {
         PetInfo petInfo = petInfoConverter.toEntity(petInfoAddDTO);
         petInfo.setUserId(userId);
+        petInfo.setIsNeutered(defaultPetTag(petInfo.getIsNeutered()));
+        petInfo.setAggressiveTag(defaultPetTag(petInfo.getAggressiveTag()));
         petInfo.setCreateTime(LocalDateTime.now());
         petInfoMapper.insert(petInfo);
     }
@@ -47,6 +49,8 @@ public class PetInfoServiceImpl implements PetInfoService {
                 .set(PetInfo::getPetType, petInfoUpdateDTO.getPetType())
                 .set(PetInfo::getBreed, petInfoUpdateDTO.getBreed())
                 .set(PetInfo::getWeight, petInfoUpdateDTO.getWeight())
+                .set(PetInfo::getIsNeutered, defaultPetTag(petInfoUpdateDTO.getIsNeutered()))
+                .set(PetInfo::getAggressiveTag, defaultPetTag(petInfoUpdateDTO.getAggressiveTag()))
                 .set(PetInfo::getUpdateTime, LocalDateTime.now());
         return petInfoMapper.update(null, updateWrapper) > 0;
     }
@@ -57,5 +61,9 @@ public class PetInfoServiceImpl implements PetInfoService {
         queryWrapper.eq(PetInfo::getId, id)
                 .eq(PetInfo::getUserId, userId);
         return petInfoMapper.delete(queryWrapper) > 0;
+    }
+
+    private Integer defaultPetTag(Integer value) {
+        return value == null ? 0 : value;
     }
 }

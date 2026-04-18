@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `pet_info` (
     `breed` varchar(50) DEFAULT NULL COMMENT '品种(如: 金毛, 布偶)',
     `weight` decimal(5,2) DEFAULT NULL COMMENT '体重(kg), 影响遛狗费率',
     `is_neutered` tinyint(1) DEFAULT '0' COMMENT '是否绝育: 1是 0否',
-    `aggressive_tag` tinyint(1) DEFAULT '0' COMMENT '高危攻击性标签: 1有咬人史 0温顺(重要派单依据)',
+    `aggressive_tag` tinyint(1) DEFAULT '0' COMMENT '攻击性标签: 0温顺 1轻微敏感 2高攻击风险',
     `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),

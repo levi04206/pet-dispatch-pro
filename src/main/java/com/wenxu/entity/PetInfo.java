@@ -27,7 +27,8 @@ public class PetInfo implements Serializable {
     private Integer petType;  // 宠物类型：1猫 2狗 3其他
     private String breed;     // 品种 (如：金毛、布偶)
     private Double weight;    // 体重(kg)
-//    private String healthStatus; // 健康状况描述
+    private Integer isNeutered; // 是否绝育：0否 1是
+    private Integer aggressiveTag; // 攻击性标签：0温顺 1轻微敏感 2高攻击风险
 
     private LocalDateTime createTime;
     private LocalDateTime updateTime;

@@ -11,15 +11,17 @@ ON DUPLICATE KEY UPDATE
     `status` = VALUES(`status`),
     `role` = VALUES(`role`);
 
-INSERT INTO `pet_info` (`id`, `user_id`, `name`, `type`, `breed`, `weight`)
+INSERT INTO `pet_info` (`id`, `user_id`, `name`, `type`, `breed`, `weight`, `is_neutered`, `aggressive_tag`)
 VALUES
-    (2001, 1001, '小福', 2, '柯基', 10.50)
+    (2001, 1001, '小福', 2, '柯基', 10.50, 1, 0)
 ON DUPLICATE KEY UPDATE
     `user_id` = VALUES(`user_id`),
     `name` = VALUES(`name`),
     `type` = VALUES(`type`),
     `breed` = VALUES(`breed`),
-    `weight` = VALUES(`weight`);
+    `weight` = VALUES(`weight`),
+    `is_neutered` = VALUES(`is_neutered`),
+    `aggressive_tag` = VALUES(`aggressive_tag`);
 
 INSERT INTO `sitter` (`id`, `user_id`, `real_name`, `phone`, `id_card`, `rating`, `order_count`, `work_status`, `audit_status`)
 VALUES

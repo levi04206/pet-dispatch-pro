@@ -27,4 +27,12 @@ public class PetInfoAddDTO {
     @DecimalMin(value = "0.01", message = "Weight must be greater than 0")
     @DecimalMax(value = "999.99", message = "Weight cannot exceed 999.99")
     private Double weight;
+
+    @Min(value = 0, message = "Neutered flag must be 0 or 1")
+    @Max(value = 1, message = "Neutered flag must be 0 or 1")
+    private Integer isNeutered;
+
+    @Min(value = 0, message = "Aggressive tag must be 0, 1, or 2")
+    @Max(value = 2, message = "Aggressive tag must be 0, 1, or 2")
+    private Integer aggressiveTag;
 }

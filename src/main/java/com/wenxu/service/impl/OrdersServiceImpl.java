@@ -92,13 +92,14 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public List<Orders> getPublicPool(Long userId) {
-        // 只有审核通过且处于接单中的宠托师可以查看公共订单池。
-        if (getAvailableSitter(userId) == null) {
+        // 只有审核通过且没有休息中的宠托师可以查看公共订单池。
+        if (getGrabCapableSitter(userId) == null) {
             return Collections.emptyList();
         }
 
         LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Orders::getStatus, OrderStatusEnum.PENDING_ACCEPT.getStatus());
+        queryWrapper.eq(Orders::getStatus, OrderStatusEnum.PENDING_ACCEPT.getStatus())
+                .isNull(Orders::getSitterId);
         // 排除自己发布的订单，避免宠托师身份用户自接单。
         queryWrapper.ne(Orders::getUserId, userId);
         queryWrapper.orderByDesc(Orders::getCreateTime);
@@ -191,16 +192,17 @@ public class OrdersServiceImpl implements OrdersService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean grabOrder(Long orderId, Long userId) {
-        Sitter sitter = getAvailableSitter(userId);
+        Sitter sitter = getGrabCapableSitter(userId);
         if (sitter == null) {
             return false;
         }
 
-        // 抢单使用条件更新：订单仍待接单、不是自己的订单，才能绑定当前宠托师。
+        // 抢单使用条件更新：订单仍待接单、未绑定宠托师、不是自己的订单，才能绑定当前宠托师。
         LambdaUpdateWrapper<Orders> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Orders::getId, orderId)
                 .ne(Orders::getUserId, userId)
                 .eq(Orders::getStatus, OrderStatusEnum.PENDING_ACCEPT.getStatus())
+                .isNull(Orders::getSitterId)
                 .set(Orders::getStatus, OrderStatusEnum.ACCEPTED.getStatus())
                 .set(Orders::getSitterId, sitter.getId())
                 .set(Orders::getAcceptTime, LocalDateTime.now())
@@ -214,6 +216,18 @@ public class OrdersServiceImpl implements OrdersService {
             throw new IllegalStateException("宠托师工作状态更新失败");
         }
         return true;
+    }
+
+    private Sitter getGrabCapableSitter(Long userId) {
+        // 抢单资格 = 审核通过 + 没有主动休息。服务中不再直接阻断抢单，避免演示数据停在服务中时无法继续调试。
+        Sitter sitter = getApprovedSitter(userId);
+        if (sitter == null) {
+            return null;
+        }
+        if (SitterWorkStatusEnum.RESTING.getStatus().equals(sitter.getWorkStatus())) {
+            return null;
+        }
+        return sitter;
     }
 
     @Override

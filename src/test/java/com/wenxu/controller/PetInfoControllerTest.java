@@ -63,7 +63,7 @@ class PetInfoControllerTest {
     void addPetShouldUseCurrentUser() throws Exception {
         mockMvc.perform(post("/api/pet/add")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"petName\":\"小福\",\"petType\":2,\"breed\":\"柯基\",\"weight\":10.5}"))
+                        .content("{\"petName\":\"小福\",\"petType\":2,\"breed\":\"柯基\",\"weight\":10.5,\"isNeutered\":1,\"aggressiveTag\":0}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(1))
                 .andExpect(jsonPath("$.data").value("添加宠物成功"));
@@ -131,7 +131,7 @@ class PetInfoControllerTest {
 
         mockMvc.perform(put("/api/pet/10")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"petName\":\"小福\",\"petType\":2,\"breed\":\"柯基\",\"weight\":11.5}"))
+                        .content("{\"petName\":\"小福\",\"petType\":2,\"breed\":\"柯基\",\"weight\":11.5,\"isNeutered\":1,\"aggressiveTag\":0}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(1))
                 .andExpect(jsonPath("$.data").value("修改宠物成功"));
@@ -145,7 +145,7 @@ class PetInfoControllerTest {
 
         mockMvc.perform(put("/api/pet/10")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"petName\":\"小福\",\"petType\":2,\"breed\":\"柯基\",\"weight\":11.5}"))
+                        .content("{\"petName\":\"小福\",\"petType\":2,\"breed\":\"柯基\",\"weight\":11.5,\"isNeutered\":1,\"aggressiveTag\":0}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
                 .andExpect(jsonPath("$.msg").value("宠物不存在或无权修改"));

@@ -2,6 +2,8 @@ package com.wenxu.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.MybatisConfiguration;
+import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.wenxu.common.OrderStatusEnum;
 import com.wenxu.common.SitterAuditStatusEnum;
 import com.wenxu.common.SitterWorkStatusEnum;
@@ -13,6 +15,8 @@ import com.wenxu.entity.Sitter;
 import com.wenxu.mapper.OrdersMapper;
 import com.wenxu.mapper.PetInfoMapper;
 import com.wenxu.mapper.SitterMapper;
+import org.apache.ibatis.builder.MapperBuilderAssistant;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,6 +43,13 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OrdersServiceImplTest {
+
+    @BeforeAll
+    static void initTableInfo() {
+        MybatisConfiguration configuration = new MybatisConfiguration();
+        TableInfoHelper.initTableInfo(new MapperBuilderAssistant(configuration, ""), Orders.class);
+        TableInfoHelper.initTableInfo(new MapperBuilderAssistant(configuration, ""), Sitter.class);
+    }
 
     @Mock
     private OrdersMapper ordersMapper;
@@ -335,11 +346,11 @@ class OrdersServiceImplTest {
     }
 
     @Test
-    void grabOrderShouldBindApprovedAcceptingSitter() {
+    void grabOrderShouldBindApprovedNonRestingSitter() {
         Sitter sitter = new Sitter();
         sitter.setId(10L);
         sitter.setAuditStatus(1);
-        sitter.setWorkStatus(1);
+        sitter.setWorkStatus(SitterWorkStatusEnum.SERVING.getStatus());
 
         when(sitterMapper.selectOne(any())).thenReturn(sitter);
         when(ordersMapper.update(any(), any())).thenReturn(1);
@@ -352,6 +363,22 @@ class OrdersServiceImplTest {
         verify(sitterMapper).update(isNull(), any(Wrapper.class));
         LambdaUpdateWrapper<Orders> wrapper = captureOrderUpdateWrapper();
         assertTrue(wrapper.getSqlSegment().contains("user_id"));
+        assertTrue(wrapper.getSqlSegment().contains("sitter_id"));
+    }
+
+    @Test
+    void grabOrderShouldRejectRestingSitter() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setAuditStatus(SitterAuditStatusEnum.APPROVED.getStatus());
+        sitter.setWorkStatus(SitterWorkStatusEnum.RESTING.getStatus());
+
+        when(sitterMapper.selectOne(any())).thenReturn(sitter);
+
+        boolean grabbed = ordersService.grabOrder(20L, 100L);
+
+        assertFalse(grabbed);
+        verify(ordersMapper, never()).update(any(), any());
     }
 
     @Test

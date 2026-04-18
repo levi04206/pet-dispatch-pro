@@ -2,11 +2,15 @@ package com.wenxu.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.MybatisConfiguration;
+import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.wenxu.converter.PetInfoConverter;
 import com.wenxu.dto.PetInfoAddDTO;
 import com.wenxu.dto.PetInfoUpdateDTO;
 import com.wenxu.entity.PetInfo;
 import com.wenxu.mapper.PetInfoMapper;
+import org.apache.ibatis.builder.MapperBuilderAssistant;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -26,6 +30,11 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PetInfoServiceImplTest {
+
+    @BeforeAll
+    static void initTableInfo() {
+        TableInfoHelper.initTableInfo(new MapperBuilderAssistant(new MybatisConfiguration(), ""), PetInfo.class);
+    }
 
     @Mock
     private PetInfoMapper petInfoMapper;
@@ -47,6 +56,8 @@ class PetInfoServiceImplTest {
         petInfoService.addPet(dto, 100L);
 
         assertEquals(100L, mappedPet.getUserId());
+        assertEquals(0, mappedPet.getIsNeutered());
+        assertEquals(0, mappedPet.getAggressiveTag());
         assertNotNull(mappedPet.getCreateTime());
         verify(petInfoMapper).insert(mappedPet);
     }
@@ -83,6 +94,8 @@ class PetInfoServiceImplTest {
         dto.setPetType(2);
         dto.setBreed("柯基");
         dto.setWeight(11.5);
+        dto.setIsNeutered(1);
+        dto.setAggressiveTag(2);
         when(petInfoMapper.update(isNull(), any())).thenReturn(1);
 
         boolean updated = petInfoService.updateMyPet(10L, dto, 100L);
@@ -97,6 +110,8 @@ class PetInfoServiceImplTest {
         assertTrue(sqlSet.contains("type"));
         assertTrue(sqlSet.contains("breed"));
         assertTrue(sqlSet.contains("weight"));
+        assertTrue(sqlSet.contains("is_neutered"));
+        assertTrue(sqlSet.contains("aggressive_tag"));
         assertTrue(sqlSet.contains("update_time"));
     }
 
