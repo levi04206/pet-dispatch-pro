@@ -10,6 +10,7 @@ import com.wenxu.mapper.UserMapper;
 import com.wenxu.service.UserService;
 import com.wenxu.utils.JwtUtils;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -42,10 +44,9 @@ public class UserServiceImpl implements UserService {
         String redisKey = RedisConstants.LOGIN_CODE_KEY + phone;
         stringRedisTemplate.opsForValue().set(redisKey, code, RedisConstants.LOGIN_CODE_TTL, TimeUnit.MINUTES);
 
-        System.out.println("=======================================================");
-        System.out.println("[PetDispatch Pro] 向手机号 " + phone + " 发送短信成功");
-        System.out.println("[PetDispatch Pro] 您的登录验证码为：" + code + "，5 分钟内有效");
-        System.out.println("=======================================================");
+        // 当前项目还没有接入真实短信平台，演示环境通过日志查看验证码。
+        log.info("[PetDispatch Pro] 向手机号 {} 发送短信成功，验证码为：{}，{} 分钟内有效",
+                phone, code, RedisConstants.LOGIN_CODE_TTL);
         return true;
     }
 
