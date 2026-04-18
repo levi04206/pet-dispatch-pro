@@ -37,10 +37,14 @@ public class SitterRecommendServiceImpl implements SitterRecommendService {
             return listTopRatedFromDb(size);
         }
 
-        List<Long> ids = sitterIds.stream().map(Long::valueOf).toList();
+        List<Long> ids = parseSitterIds(sitterIds);
+        if (ids.isEmpty()) {
+            return listTopRatedFromDb(size);
+        }
+
         List<Sitter> sitters = sitterMapper.selectBatchIds(ids);
         if (sitters == null || sitters.isEmpty()) {
-            return Collections.emptyList();
+            return listTopRatedFromDb(size);
         }
 
         List<Sitter> ordered = new ArrayList<>(sitters);
@@ -64,5 +68,17 @@ public class SitterRecommendServiceImpl implements SitterRecommendService {
             return DEFAULT_LIMIT;
         }
         return Math.min(limit, MAX_LIMIT);
+    }
+
+    private List<Long> parseSitterIds(Set<String> sitterIds) {
+        List<Long> ids = new ArrayList<>();
+        for (String sitterId : sitterIds) {
+            try {
+                ids.add(Long.valueOf(sitterId));
+            } catch (NumberFormatException ignored) {
+                // Redis 榜单可能来自手工调试或旧数据，遇到脏 member 时跳过，避免推荐接口整体失败。
+            }
+        }
+        return ids;
     }
 }

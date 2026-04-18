@@ -66,6 +66,18 @@ class SitterRecommendServiceImplTest {
         assertTrue(wrapper.getSqlSegment().contains("ORDER BY"));
     }
 
+    @Test
+    void listTopRatedSittersShouldIgnoreDirtyRedisMembersAndFallbackToDb() {
+        Set<String> ids = new LinkedHashSet<>(List.of("bad-id"));
+        when(stringRedisTemplate.opsForZSet()).thenReturn(zSetOperations);
+        when(zSetOperations.reverseRange("pet:sitter:rank:rating", 0, 4L)).thenReturn(ids);
+        when(sitterMapper.selectList(any())).thenReturn(List.of(approvedSitter(30L)));
+
+        List<Sitter> result = sitterRecommendService.listTopRatedSitters(5);
+
+        assertEquals(List.of(approvedSitter(30L)), result);
+    }
+
     private Sitter approvedSitter(Long id) {
         Sitter sitter = new Sitter();
         sitter.setId(id);
