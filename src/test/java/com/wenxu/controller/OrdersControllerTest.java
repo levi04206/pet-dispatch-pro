@@ -180,6 +180,24 @@ class OrdersControllerTest {
     }
 
     @Test
+    void listMyAssignedOrdersShouldUseCurrentUser() throws Exception {
+        Orders order = new Orders();
+        order.setId(20L);
+        OrderVO vo = new OrderVO();
+        vo.setId(20L);
+
+        when(ordersService.listMyAssignedOrders(100L)).thenReturn(java.util.List.of(order));
+        when(orderConverter.toVOList(java.util.List.of(order))).thenReturn(java.util.List.of(vo));
+
+        mockMvc.perform(get("/api/orders/sitter/assigned"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1))
+                .andExpect(jsonPath("$.data[0].id").value(20));
+
+        verify(ordersService).listMyAssignedOrders(100L);
+    }
+
+    @Test
     void cancelOrderShouldUseCurrentUser() throws Exception {
         when(ordersService.cancelOrder(20L, 100L)).thenReturn(true);
 
@@ -213,6 +231,20 @@ class OrdersControllerTest {
                 .andExpect(jsonPath("$.data").value("抢单成功"));
 
         verify(ordersService).grabOrder(20L, 100L);
+    }
+
+    @Test
+    void rejectAssignedOrderShouldUseCurrentUser() throws Exception {
+        when(ordersService.rejectAssignedOrder(20L, "档期已满", 100L)).thenReturn(true);
+
+        mockMvc.perform(post("/api/orders/reject")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"orderId\":20,\"rejectReason\":\"档期已满\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1))
+                .andExpect(jsonPath("$.data").value("已拒绝该指定订单"));
+
+        verify(ordersService).rejectAssignedOrder(20L, "档期已满", 100L);
     }
 
     @Test

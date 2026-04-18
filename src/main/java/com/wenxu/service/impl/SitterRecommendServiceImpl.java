@@ -2,8 +2,11 @@ package com.wenxu.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wenxu.common.SitterAuditStatusEnum;
+import com.wenxu.common.OrderStatusEnum;
 import com.wenxu.constant.RedisConstants;
+import com.wenxu.entity.Orders;
 import com.wenxu.entity.Sitter;
+import com.wenxu.mapper.OrdersMapper;
 import com.wenxu.mapper.SitterMapper;
 import com.wenxu.service.SitterRecommendService;
 import jakarta.annotation.Resource;
@@ -24,6 +27,9 @@ public class SitterRecommendServiceImpl implements SitterRecommendService {
 
     @Resource
     private SitterMapper sitterMapper;
+
+    @Resource
+    private OrdersMapper ordersMapper;
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
@@ -52,6 +58,16 @@ public class SitterRecommendServiceImpl implements SitterRecommendService {
         return ordered.stream()
                 .filter(sitter -> SitterAuditStatusEnum.APPROVED.getStatus().equals(sitter.getAuditStatus()))
                 .toList();
+    }
+
+    @Override
+    public List<Orders> listSitterReviews(Long sitterId) {
+        LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Orders::getSitterId, sitterId)
+                .eq(Orders::getStatus, OrderStatusEnum.EVALUATED.getStatus())
+                .isNotNull(Orders::getEvaluateRating)
+                .orderByDesc(Orders::getEvaluateTime);
+        return ordersMapper.selectList(queryWrapper);
     }
 
     private List<Sitter> listTopRatedFromDb(int limit) {

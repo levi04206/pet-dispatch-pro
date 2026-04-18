@@ -23,4 +23,6 @@ public class OrderCreateDTO {
 
     @DecimalMin(value = "0.00", message = "Distance cannot be negative")
     private BigDecimal distance;
+
+    private Long targetSitterId;
 }

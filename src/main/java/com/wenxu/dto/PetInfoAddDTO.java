@@ -28,6 +28,9 @@ public class PetInfoAddDTO {
     @DecimalMax(value = "999.99", message = "Weight cannot exceed 999.99")
     private Double weight;
 
+    @Size(max = 255, message = "Pet image URL cannot exceed 255 characters")
+    private String imageUrl;
+
     @Min(value = 0, message = "Neutered flag must be 0 or 1")
     @Max(value = 1, message = "Neutered flag must be 0 or 1")
     private Integer isNeutered;

@@ -24,6 +24,7 @@ public class Orders implements Serializable {
     private Long userId;
     private Long petId;
     private Long sitterId;
+    private Long targetSitterId;
 
     private BigDecimal totalAmount;
     private BigDecimal payAmount;
@@ -36,6 +37,7 @@ public class Orders implements Serializable {
 
     private String startProof;
     private String endProof;
+    private String rejectReason;
     private Integer evaluateRating;
     private String evaluateContent;
 
@@ -44,6 +46,7 @@ public class Orders implements Serializable {
     private LocalDateTime acceptTime;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private LocalDateTime rejectTime;
     private LocalDateTime evaluateTime;
 
     private LocalDateTime createTime;

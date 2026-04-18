@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS `pet_info` (
     `type` tinyint NOT NULL COMMENT '种类: 1猫 2狗 3异宠',
     `breed` varchar(50) DEFAULT NULL COMMENT '品种(如: 金毛, 布偶)',
     `weight` decimal(5,2) DEFAULT NULL COMMENT '体重(kg), 影响遛狗费率',
+    `image_url` varchar(255) DEFAULT NULL COMMENT '宠物图片URL，便于宠托师接单前判断照护难度',
     `is_neutered` tinyint(1) DEFAULT '0' COMMENT '是否绝育: 1是 0否',
     `aggressive_tag` tinyint(1) DEFAULT '0' COMMENT '攻击性标签: 0温顺 1轻微敏感 2高攻击风险',
     `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -58,6 +59,7 @@ CREATE TABLE IF NOT EXISTS `orders` (
     `user_id` bigint NOT NULL COMMENT '下单用户ID',
     `pet_id` bigint NOT NULL COMMENT '宠物档案ID',
     `sitter_id` bigint DEFAULT NULL COMMENT '承接宠托师ID(抢单后填入)',
+    `target_sitter_id` bigint DEFAULT NULL COMMENT '用户指定宠托师ID，为空表示公共订单池',
     `total_amount` decimal(10,2) NOT NULL COMMENT '订单总金额',
     `pay_amount` decimal(10,2) NOT NULL COMMENT '实付金额',
     `distance` decimal(10,2) DEFAULT NULL COMMENT '预估/实际服务距离(km)',
@@ -65,6 +67,7 @@ CREATE TABLE IF NOT EXISTS `orders` (
     `version` int NOT NULL DEFAULT '0' COMMENT '乐观锁版本号',
     `start_proof` varchar(255) DEFAULT NULL COMMENT '开始服务图片凭证(OSS URL)',
     `end_proof` varchar(255) DEFAULT NULL COMMENT '结束服务视频/图片凭证(OSS URL)',
+    `reject_reason` varchar(100) DEFAULT NULL COMMENT '宠托师拒绝指定订单原因',
     `evaluate_rating` tinyint DEFAULT NULL COMMENT '用户评分: 1-5',
     `evaluate_content` varchar(255) DEFAULT NULL COMMENT '用户评价内容',
     `evaluate_time` datetime DEFAULT NULL COMMENT '用户评价时间',
@@ -73,10 +76,12 @@ CREATE TABLE IF NOT EXISTS `orders` (
     `accept_time` datetime DEFAULT NULL COMMENT '宠托师接单时间',
     `start_time` datetime DEFAULT NULL COMMENT '实际开始服务时间',
     `end_time` datetime DEFAULT NULL COMMENT '服务结束时间',
+    `reject_time` datetime DEFAULT NULL COMMENT '宠托师拒单时间',
     `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     UNIQUE KEY `idx_order_sn` (`order_sn`),
     KEY `idx_user_id` (`user_id`),
-    KEY `idx_sitter_id` (`sitter_id`)
+    KEY `idx_sitter_id` (`sitter_id`),
+    KEY `idx_target_sitter_id` (`target_sitter_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='核心调度订单表';

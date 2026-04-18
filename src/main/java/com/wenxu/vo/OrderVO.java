@@ -12,6 +12,7 @@ public class OrderVO {
     private String orderSn;
     private Long petId;
     private Long sitterId;
+    private Long targetSitterId;
     private BigDecimal totalAmount;
     private BigDecimal payAmount;
     private BigDecimal distance;
@@ -19,10 +20,12 @@ public class OrderVO {
     private String statusDesc;
     private Integer evaluateRating;
     private String evaluateContent;
+    private String rejectReason;
     private LocalDateTime reserveTime;
     private LocalDateTime payTime;
     private LocalDateTime acceptTime;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private LocalDateTime rejectTime;
     private LocalDateTime evaluateTime;
 }

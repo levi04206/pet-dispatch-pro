@@ -210,6 +210,24 @@ class OrdersServiceImplTest {
     }
 
     @Test
+    void listMyAssignedOrdersShouldScopeByTargetSitter() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setAuditStatus(SitterAuditStatusEnum.APPROVED.getStatus());
+        sitter.setWorkStatus(SitterWorkStatusEnum.ACCEPTING.getStatus());
+        Orders order = new Orders();
+        order.setId(20L);
+
+        when(sitterMapper.selectOne(any())).thenReturn(sitter);
+        when(ordersMapper.selectList(any())).thenReturn(List.of(order));
+
+        List<Orders> result = ordersService.listMyAssignedOrders(100L);
+
+        assertEquals(List.of(order), result);
+        verify(ordersMapper).selectList(any());
+    }
+
+    @Test
     void getMyOrderDetailShouldScopeByOrderOwner() {
         Orders order = new Orders();
         order.setId(20L);
@@ -367,6 +385,26 @@ class OrdersServiceImplTest {
     }
 
     @Test
+    void grabOrderShouldAllowAssignedOrderOnlyForTargetSitter() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setAuditStatus(SitterAuditStatusEnum.APPROVED.getStatus());
+        sitter.setWorkStatus(SitterWorkStatusEnum.ACCEPTING.getStatus());
+
+        when(sitterMapper.selectOne(any())).thenReturn(sitter);
+        when(ordersMapper.update(any(), any())).thenReturn(1);
+        when(sitterMapper.update(isNull(), any(Wrapper.class))).thenReturn(1);
+
+        boolean grabbed = ordersService.grabOrder(20L, 100L);
+
+        assertTrue(grabbed);
+        LambdaUpdateWrapper<Orders> wrapper = captureOrderUpdateWrapper();
+        String sqlSegment = wrapper.getSqlSegment();
+        assertTrue(sqlSegment.contains("target_sitter_id"));
+        assertTrue(sqlSegment.contains("sitter_id"));
+    }
+
+    @Test
     void grabOrderShouldRejectRestingSitter() {
         Sitter sitter = new Sitter();
         sitter.setId(10L);
@@ -379,6 +417,24 @@ class OrdersServiceImplTest {
 
         assertFalse(grabbed);
         verify(ordersMapper, never()).update(any(), any());
+    }
+
+    @Test
+    void rejectAssignedOrderShouldCancelTargetOrderAndRecordReason() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setAuditStatus(SitterAuditStatusEnum.APPROVED.getStatus());
+
+        when(sitterMapper.selectOne(any())).thenReturn(sitter);
+        when(ordersMapper.update(isNull(), any())).thenReturn(1);
+
+        boolean rejected = ordersService.rejectAssignedOrder(20L, "档期已满", 100L);
+
+        assertTrue(rejected);
+        LambdaUpdateWrapper<Orders> wrapper = captureOrderUpdateWrapper();
+        assertTrue(wrapper.getSqlSegment().contains("target_sitter_id"));
+        assertTrue(wrapper.getSqlSet().contains("reject_reason"));
+        assertTrue(wrapper.getSqlSet().contains("reject_time"));
     }
 
     @Test

@@ -18,6 +18,8 @@ public interface OrdersService {
 
     List<Orders> listMyServiceOrders(Long userId);
 
+    List<Orders> listMyAssignedOrders(Long userId);
+
     Orders getMyOrderDetail(Long orderId, Long userId);
 
     Orders getMyServiceOrderDetail(Long orderId, Long userId);
@@ -27,6 +29,8 @@ public interface OrdersService {
     boolean evaluateOrder(OrderEvaluateDTO orderEvaluateDTO, Long userId);
 
     boolean grabOrder(Long orderId, Long userId);
+
+    boolean rejectAssignedOrder(Long orderId, String rejectReason, Long userId);
 
     boolean startService(Long orderId, String picUrl, Long userId);
 

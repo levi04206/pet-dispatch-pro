@@ -49,6 +49,7 @@ public class PetInfoServiceImpl implements PetInfoService {
                 .set(PetInfo::getPetType, petInfoUpdateDTO.getPetType())
                 .set(PetInfo::getBreed, petInfoUpdateDTO.getBreed())
                 .set(PetInfo::getWeight, petInfoUpdateDTO.getWeight())
+                .set(PetInfo::getImageUrl, petInfoUpdateDTO.getImageUrl())
                 .set(PetInfo::getIsNeutered, defaultPetTag(petInfoUpdateDTO.getIsNeutered()))
                 .set(PetInfo::getAggressiveTag, defaultPetTag(petInfoUpdateDTO.getAggressiveTag()))
                 .set(PetInfo::getUpdateTime, LocalDateTime.now());

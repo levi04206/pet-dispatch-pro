@@ -58,6 +58,7 @@ public class OrdersServiceImpl implements OrdersService {
         orders.setUserId(userId);
         orders.setOrderSn("OD" + IdUtil.getSnowflakeNextIdStr());
         orders.setStatus(OrderStatusEnum.PENDING_PAYMENT.getStatus());
+        orders.setTargetSitterId(orderCreateDTO.getTargetSitterId());
         orders.setVersion(0);
 
         if (orders.getTotalAmount() == null) {
@@ -99,7 +100,8 @@ public class OrdersServiceImpl implements OrdersService {
 
         LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Orders::getStatus, OrderStatusEnum.PENDING_ACCEPT.getStatus())
-                .isNull(Orders::getSitterId);
+                .isNull(Orders::getSitterId)
+                .isNull(Orders::getTargetSitterId);
         // 排除自己发布的订单，避免宠托师身份用户自接单。
         queryWrapper.ne(Orders::getUserId, userId);
         queryWrapper.orderByDesc(Orders::getCreateTime);
@@ -124,6 +126,21 @@ public class OrdersServiceImpl implements OrdersService {
         LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Orders::getSitterId, sitter.getId());
         queryWrapper.orderByDesc(Orders::getAcceptTime);
+        return ordersMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public List<Orders> listMyAssignedOrders(Long userId) {
+        Sitter sitter = getGrabCapableSitter(userId);
+        if (sitter == null) {
+            return Collections.emptyList();
+        }
+
+        LambdaQueryWrapper<Orders> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Orders::getTargetSitterId, sitter.getId())
+                .eq(Orders::getStatus, OrderStatusEnum.PENDING_ACCEPT.getStatus())
+                .isNull(Orders::getSitterId)
+                .orderByDesc(Orders::getPayTime);
         return ordersMapper.selectList(queryWrapper);
     }
 
@@ -203,6 +220,9 @@ public class OrdersServiceImpl implements OrdersService {
                 .ne(Orders::getUserId, userId)
                 .eq(Orders::getStatus, OrderStatusEnum.PENDING_ACCEPT.getStatus())
                 .isNull(Orders::getSitterId)
+                .and(wrapper -> wrapper.isNull(Orders::getTargetSitterId)
+                        .or()
+                        .eq(Orders::getTargetSitterId, sitter.getId()))
                 .set(Orders::getStatus, OrderStatusEnum.ACCEPTED.getStatus())
                 .set(Orders::getSitterId, sitter.getId())
                 .set(Orders::getAcceptTime, LocalDateTime.now())
@@ -216,6 +236,25 @@ public class OrdersServiceImpl implements OrdersService {
             throw new IllegalStateException("宠托师工作状态更新失败");
         }
         return true;
+    }
+
+    @Override
+    public boolean rejectAssignedOrder(Long orderId, String rejectReason, Long userId) {
+        Sitter sitter = getApprovedSitter(userId);
+        if (sitter == null) {
+            return false;
+        }
+
+        LambdaUpdateWrapper<Orders> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Orders::getId, orderId)
+                .eq(Orders::getTargetSitterId, sitter.getId())
+                .eq(Orders::getStatus, OrderStatusEnum.PENDING_ACCEPT.getStatus())
+                .isNull(Orders::getSitterId)
+                .set(Orders::getStatus, OrderStatusEnum.CANCELED.getStatus())
+                .set(Orders::getRejectReason, rejectReason)
+                .set(Orders::getRejectTime, LocalDateTime.now())
+                .setSql("version = version + 1");
+        return ordersMapper.update(null, updateWrapper) > 0;
     }
 
     private Sitter getGrabCapableSitter(Long userId) {

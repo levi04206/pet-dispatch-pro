@@ -7,6 +7,7 @@ import com.wenxu.converter.OrderConverter;
 import com.wenxu.dto.OrderCreateDTO;
 import com.wenxu.dto.OrderEvaluateDTO;
 import com.wenxu.dto.OrderProofDTO;
+import com.wenxu.dto.OrderRejectDTO;
 import com.wenxu.entity.Orders;
 import com.wenxu.service.OrdersService;
 import com.wenxu.vo.OrderVO;
@@ -93,6 +94,15 @@ public class OrdersController {
     }
 
     /**
+     * 宠托师查看用户指定给自己的待接单订单。
+     */
+    @GetMapping("/sitter/assigned")
+    public Result<List<OrderVO>> listMyAssignedOrders() {
+        Long userId = BaseContext.getCurrentId();
+        return Result.success(orderConverter.toVOList(ordersService.listMyAssignedOrders(userId)));
+    }
+
+    /**
      * 宠托师查看自己承接的订单详情。
      */
     @GetMapping("/sitter/{orderId}")
@@ -133,6 +143,16 @@ public class OrdersController {
         Long userId = BaseContext.getCurrentId();
         boolean grabbed = ordersService.grabOrder(orderId, userId);
         return grabbed ? Result.success(ApiMessages.ORDER_GRAB_SUCCESS) : Result.error(ApiMessages.ORDER_GRAB_FAILED);
+    }
+
+    /**
+     * 宠托师拒绝用户指定给自己的订单。
+     */
+    @PostMapping("/reject")
+    public Result<String> rejectAssignedOrder(@Valid @RequestBody OrderRejectDTO orderRejectDTO) {
+        Long userId = BaseContext.getCurrentId();
+        boolean rejected = ordersService.rejectAssignedOrder(orderRejectDTO.getOrderId(), orderRejectDTO.getRejectReason(), userId);
+        return rejected ? Result.success(ApiMessages.ORDER_REJECT_SUCCESS) : Result.error(ApiMessages.ORDER_REJECT_FAILED);
     }
 
     /**

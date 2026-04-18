@@ -2,7 +2,9 @@ package com.wenxu.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wenxu.common.SitterAuditStatusEnum;
+import com.wenxu.entity.Orders;
 import com.wenxu.entity.Sitter;
+import com.wenxu.mapper.OrdersMapper;
 import com.wenxu.mapper.SitterMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +30,9 @@ class SitterRecommendServiceImplTest {
 
     @Mock
     private SitterMapper sitterMapper;
+
+    @Mock
+    private OrdersMapper ordersMapper;
 
     @Mock
     private StringRedisTemplate stringRedisTemplate;
@@ -76,6 +81,18 @@ class SitterRecommendServiceImplTest {
         List<Sitter> result = sitterRecommendService.listTopRatedSitters(5);
 
         assertEquals(List.of(approvedSitter(30L)), result);
+    }
+
+    @Test
+    void listSitterReviewsShouldQueryEvaluatedOrders() {
+        Orders order = new Orders();
+        order.setId(40L);
+        when(ordersMapper.selectList(any())).thenReturn(List.of(order));
+
+        List<Orders> result = sitterRecommendService.listSitterReviews(10L);
+
+        assertEquals(List.of(order), result);
+        verify(ordersMapper).selectList(any());
     }
 
     private Sitter approvedSitter(Long id) {
