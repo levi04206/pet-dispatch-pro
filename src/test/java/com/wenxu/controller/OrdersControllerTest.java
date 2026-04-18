@@ -242,7 +242,7 @@ class OrdersControllerTest {
                         .content("{\"orderId\":20,\"rejectReason\":\"档期已满\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(1))
-                .andExpect(jsonPath("$.data").value("已拒绝该指定订单"));
+                .andExpect(jsonPath("$.data").value("已拒绝该指定订单，系统已模拟取消订单、退款并通知用户重新选择"));
 
         verify(ordersService).rejectAssignedOrder(20L, "档期已满", 100L);
     }

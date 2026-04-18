@@ -35,7 +35,7 @@ public final class ApiMessages {
     public static final String ORDER_EVALUATE_FAILED = "评价失败，订单不存在、无权操作或当前状态不可评价";
     public static final String ORDER_GRAB_SUCCESS = "抢单成功";
     public static final String ORDER_GRAB_FAILED = "抢单失败，订单已被抢走或当前用户不具备接单资格";
-    public static final String ORDER_REJECT_SUCCESS = "已拒绝该指定订单";
+    public static final String ORDER_REJECT_SUCCESS = "已拒绝该指定订单，系统已模拟取消订单、退款并通知用户重新选择";
     public static final String ORDER_REJECT_FAILED = "拒单失败，订单不存在、已被处理或不属于当前宠托师";
     public static final String ORDER_START_SUCCESS = "打卡成功，服务开始";
     public static final String ORDER_SERVICE_COMPLETE_SUCCESS = "服务已完成";
