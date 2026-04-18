@@ -1,8 +1,10 @@
 package com.wenxu.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.wenxu.converter.PetInfoConverter;
 import com.wenxu.dto.PetInfoAddDTO;
+import com.wenxu.dto.PetInfoUpdateDTO;
 import com.wenxu.entity.PetInfo;
 import com.wenxu.mapper.PetInfoMapper;
 import com.wenxu.service.PetInfoService;
@@ -34,6 +36,19 @@ public class PetInfoServiceImpl implements PetInfoService {
         LambdaQueryWrapper<PetInfo> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(PetInfo::getUserId, userId);
         return petInfoMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public boolean updateMyPet(Long id, PetInfoUpdateDTO petInfoUpdateDTO, Long userId) {
+        LambdaUpdateWrapper<PetInfo> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(PetInfo::getId, id)
+                .eq(PetInfo::getUserId, userId)
+                .set(PetInfo::getPetName, petInfoUpdateDTO.getPetName())
+                .set(PetInfo::getPetType, petInfoUpdateDTO.getPetType())
+                .set(PetInfo::getBreed, petInfoUpdateDTO.getBreed())
+                .set(PetInfo::getWeight, petInfoUpdateDTO.getWeight())
+                .set(PetInfo::getUpdateTime, LocalDateTime.now());
+        return petInfoMapper.update(null, updateWrapper) > 0;
     }
 
     @Override

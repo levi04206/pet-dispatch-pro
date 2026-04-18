@@ -45,6 +45,7 @@
 - `docs/schema.sql`
 - `docs/migrations/`
 - `docs/demo-data.sql` 提供少量演示数据，可用于本地串核心流程。
+- 演示账号：`13800138001` 普通用户，`13800138002` 已审核宠托师，`13800138003` 管理员，`13800138004` 待审核申请用户。
 - `docs/demo-flow.md` 提供核心业务演示步骤。
 - `docs/release-checklist.md` 提供演示或提交前的交付检查清单。
 
@@ -59,6 +60,7 @@
 
 - `POST /api/pet/add`
 - `GET /api/pet/list`
+- `PUT /api/pet/{id}`
 - `DELETE /api/pet/{id}`
 
 宠托师：

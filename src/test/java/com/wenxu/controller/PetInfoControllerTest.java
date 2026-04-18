@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -122,5 +123,31 @@ class PetInfoControllerTest {
                 .andExpect(jsonPath("$.data").value("删除成功"));
 
         verify(petInfoService).deleteMyPet(10L, 100L);
+    }
+
+    @Test
+    void updatePetShouldUseCurrentUser() throws Exception {
+        when(petInfoService.updateMyPet(eq(10L), any(), eq(100L))).thenReturn(true);
+
+        mockMvc.perform(put("/api/pet/10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"petName\":\"小福\",\"petType\":2,\"breed\":\"柯基\",\"weight\":11.5}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1))
+                .andExpect(jsonPath("$.data").value("修改宠物成功"));
+
+        verify(petInfoService).updateMyPet(eq(10L), any(), eq(100L));
+    }
+
+    @Test
+    void updatePetShouldReturnErrorWhenPetDoesNotBelongToCurrentUser() throws Exception {
+        when(petInfoService.updateMyPet(eq(10L), any(), eq(100L))).thenReturn(false);
+
+        mockMvc.perform(put("/api/pet/10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"petName\":\"小福\",\"petType\":2,\"breed\":\"柯基\",\"weight\":11.5}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(0))
+                .andExpect(jsonPath("$.msg").value("宠物不存在或无权修改"));
     }
 }

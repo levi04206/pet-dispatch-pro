@@ -5,6 +5,7 @@ import com.wenxu.common.BaseContext;
 import com.wenxu.common.Result;
 import com.wenxu.converter.PetInfoConverter;
 import com.wenxu.dto.PetInfoAddDTO;
+import com.wenxu.dto.PetInfoUpdateDTO;
 import com.wenxu.entity.PetInfo;
 import com.wenxu.service.PetInfoService;
 import com.wenxu.vo.PetInfoVO;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,6 +50,19 @@ public class PetInfoController {
         Long userId = BaseContext.getCurrentId();
         List<PetInfo> list = petInfoService.listMyPets(userId);
         return Result.success(petInfoConverter.toVOList(list));
+    }
+
+    /**
+     * 修改当前用户自己的宠物档案，避免修改他人宠物。
+     */
+    @PutMapping("/{id}")
+    public Result<String> updatePet(@PathVariable Long id, @Valid @RequestBody PetInfoUpdateDTO petInfoUpdateDTO) {
+        Long userId = BaseContext.getCurrentId();
+        boolean updated = petInfoService.updateMyPet(id, petInfoUpdateDTO, userId);
+        if (!updated) {
+            return Result.error(ApiMessages.PET_UPDATE_NOT_FOUND_OR_FORBIDDEN);
+        }
+        return Result.success(ApiMessages.PET_UPDATE_SUCCESS);
     }
 
     /**

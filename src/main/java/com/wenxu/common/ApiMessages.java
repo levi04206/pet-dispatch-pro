@@ -10,6 +10,8 @@ public final class ApiMessages {
     public static final String UPLOAD_FAILED = "文件上传失败";
 
     public static final String PET_ADD_SUCCESS = "添加宠物成功";
+    public static final String PET_UPDATE_SUCCESS = "修改宠物成功";
+    public static final String PET_UPDATE_NOT_FOUND_OR_FORBIDDEN = "宠物不存在或无权修改";
     public static final String PET_DELETE_SUCCESS = "删除成功";
     public static final String PET_NOT_FOUND_OR_FORBIDDEN = "宠物不存在或无权删除";
 
