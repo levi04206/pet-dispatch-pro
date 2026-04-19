@@ -93,8 +93,8 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public List<Orders> getPublicPool(Long userId) {
-        // 只有审核通过且没有休息中的宠托师可以查看公共订单池。
-        if (getGrabCapableSitter(userId) == null) {
+        // 审核通过的宠托师都可以查看公共订单池；是否能抢单在抢单动作里再校验工作状态。
+        if (getApprovedSitter(userId) == null) {
             return Collections.emptyList();
         }
 
@@ -131,7 +131,8 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public List<Orders> listMyAssignedOrders(Long userId) {
-        Sitter sitter = getGrabCapableSitter(userId);
+        // 已审核宠托师可以先查看指定给自己的订单；是否能同意接单在 grabOrder 中再校验工作状态。
+        Sitter sitter = getApprovedSitter(userId);
         if (sitter == null) {
             return Collections.emptyList();
         }

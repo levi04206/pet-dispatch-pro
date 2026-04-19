@@ -150,7 +150,7 @@ class OrdersServiceImplTest {
         Sitter sitter = new Sitter();
         sitter.setId(10L);
         sitter.setAuditStatus(SitterAuditStatusEnum.APPROVED.getStatus());
-        sitter.setWorkStatus(SitterWorkStatusEnum.ACCEPTING.getStatus());
+        sitter.setWorkStatus(SitterWorkStatusEnum.RESTING.getStatus());
         Orders order = new Orders();
         order.setId(20L);
 
@@ -214,7 +214,7 @@ class OrdersServiceImplTest {
         Sitter sitter = new Sitter();
         sitter.setId(10L);
         sitter.setAuditStatus(SitterAuditStatusEnum.APPROVED.getStatus());
-        sitter.setWorkStatus(SitterWorkStatusEnum.ACCEPTING.getStatus());
+        sitter.setWorkStatus(SitterWorkStatusEnum.RESTING.getStatus());
         Orders order = new Orders();
         order.setId(20L);
 
