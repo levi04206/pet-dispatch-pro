@@ -259,12 +259,12 @@ public class OrdersServiceImpl implements OrdersService {
     }
 
     private Sitter getGrabCapableSitter(Long userId) {
-        // 抢单资格 = 审核通过 + 没有主动休息。服务中不再直接阻断抢单，避免演示数据停在服务中时无法继续调试。
+        // 抢单资格 = 审核通过 + 当前处于接单中；服务中或休息中都不能再抢新单。
         Sitter sitter = getApprovedSitter(userId);
         if (sitter == null) {
             return null;
         }
-        if (SitterWorkStatusEnum.RESTING.getStatus().equals(sitter.getWorkStatus())) {
+        if (!SitterWorkStatusEnum.ACCEPTING.getStatus().equals(sitter.getWorkStatus())) {
             return null;
         }
         return sitter;

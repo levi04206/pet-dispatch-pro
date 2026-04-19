@@ -364,11 +364,11 @@ class OrdersServiceImplTest {
     }
 
     @Test
-    void grabOrderShouldBindApprovedNonRestingSitter() {
+    void grabOrderShouldBindApprovedAcceptingSitter() {
         Sitter sitter = new Sitter();
         sitter.setId(10L);
         sitter.setAuditStatus(1);
-        sitter.setWorkStatus(SitterWorkStatusEnum.SERVING.getStatus());
+        sitter.setWorkStatus(SitterWorkStatusEnum.ACCEPTING.getStatus());
 
         when(sitterMapper.selectOne(any())).thenReturn(sitter);
         when(ordersMapper.update(any(), any())).thenReturn(1);
@@ -410,6 +410,21 @@ class OrdersServiceImplTest {
         sitter.setId(10L);
         sitter.setAuditStatus(SitterAuditStatusEnum.APPROVED.getStatus());
         sitter.setWorkStatus(SitterWorkStatusEnum.RESTING.getStatus());
+
+        when(sitterMapper.selectOne(any())).thenReturn(sitter);
+
+        boolean grabbed = ordersService.grabOrder(20L, 100L);
+
+        assertFalse(grabbed);
+        verify(ordersMapper, never()).update(any(), any());
+    }
+
+    @Test
+    void grabOrderShouldRejectServingSitter() {
+        Sitter sitter = new Sitter();
+        sitter.setId(10L);
+        sitter.setAuditStatus(SitterAuditStatusEnum.APPROVED.getStatus());
+        sitter.setWorkStatus(SitterWorkStatusEnum.SERVING.getStatus());
 
         when(sitterMapper.selectOne(any())).thenReturn(sitter);
 
