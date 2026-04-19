@@ -380,8 +380,11 @@ class OrdersServiceImplTest {
         verify(ordersMapper).update(any(), any());
         verify(sitterMapper).update(isNull(), any(Wrapper.class));
         LambdaUpdateWrapper<Orders> wrapper = captureOrderUpdateWrapper();
-        assertTrue(wrapper.getSqlSegment().contains("user_id"));
-        assertTrue(wrapper.getSqlSegment().contains("sitter_id"));
+        String sqlSegment = wrapper.getSqlSegment();
+        assertTrue(sqlSegment.contains("user_id"));
+        assertTrue(sqlSegment.contains("status"));
+        assertTrue(sqlSegment.contains("sitter_id"));
+        assertTrue(wrapper.getSqlSet().contains("version = version + 1"));
     }
 
     @Test
