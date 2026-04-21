@@ -6,6 +6,7 @@ import lombok.Data;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 @Data
 public class PageResponse<T> implements Serializable {
@@ -23,6 +24,17 @@ public class PageResponse<T> implements Serializable {
         response.setPageNum(page.getCurrent());
         response.setPageSize(page.getSize());
         response.setRecords(page.getRecords() == null ? Collections.emptyList() : page.getRecords());
+        return response;
+    }
+
+    public static <T, R> PageResponse<R> of(IPage<T> page, Function<T, R> mapper) {
+        PageResponse<R> response = new PageResponse<>();
+        response.setTotal(page.getTotal());
+        response.setPages(page.getPages());
+        response.setPageNum(page.getCurrent());
+        response.setPageSize(page.getSize());
+        List<R> records = page.getRecords() == null ? Collections.emptyList() : page.getRecords().stream().map(mapper).toList();
+        response.setRecords(records);
         return response;
     }
 }

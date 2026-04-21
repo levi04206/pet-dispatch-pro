@@ -106,3 +106,5 @@
 - 已新增 `@Idempotent` 方法级注解与 Redis 防重复提交切面，核心写接口默认按“当前登录用户ID + 请求URI”做 3-5 秒窗口期幂等保护。
 - 已新增 `@LogOperation` 方法级注解、异步线程池与审计日志切面，关键写操作会异步落库到 `operation_log` 表，记录用户、角色、模块、动作、请求路径、IP 与耗时。
 - 已新增管理员审计日志分页查询接口 `GET /api/admin/operation-log/page`，支持按 `pageNum/pageSize/userId/role/module/keyword` 筛选，便于直接联调超时取消、重复提交拦截和核心写操作轨迹。
+- 已增强管理员审计日志能力：分页查询支持 `resultType/startTime/endTime` 过滤，新增单条详情接口 `GET /api/admin/operation-log/{id}`，后端统一返回带成功/失败结果标识的 `OperationLogVO`。
+- 已补独立前端日志控制台页面：在 `pet-dispatch-pro-frontend/operation-log.html` + `operation-log.js` 中可直接基于现有 token 查询管理员日志、翻页并查看详情，绕开旧 `app.js` 的历史编码问题，便于先行联调审计链路。
