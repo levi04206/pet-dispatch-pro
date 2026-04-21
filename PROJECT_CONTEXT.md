@@ -109,3 +109,4 @@
 - 已增强管理员审计日志能力：分页查询支持 `resultType/startTime/endTime` 过滤，新增单条详情接口 `GET /api/admin/operation-log/{id}`，后端统一返回带成功/失败结果标识的 `OperationLogVO`。
 - 已补独立前端日志控制台页面：在 `pet-dispatch-pro-frontend/operation-log.html` + `operation-log.js` 中可直接基于现有 token 查询管理员日志、翻页并查看详情，绕开旧 `app.js` 的历史编码问题，便于先行联调审计链路。
 - 已完成前端主脚本编码修复第一轮：`pet-dispatch-pro-frontend/app.js` 中导致语法错误的损坏字符串已修正，当前主前端脚本可通过 `node --check`，日志独立页和原主页面都具备继续调试的基础；后续若需要再做一轮文案统一与 UI 清洗即可。
+- 已完成前端主页面高频交互文案清洗第二轮：登录页、导航、首页宠物/订单表单、个人中心、工作台、订单操作卡片、评价与服务凭证弹窗等核心区域已替换为可读中文，当前前端已从“仅能解析”提升到“可直接继续联调业务流程”。
