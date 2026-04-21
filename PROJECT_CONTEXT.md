@@ -105,3 +105,4 @@
 
 - 已新增 `@Idempotent` 方法级注解与 Redis 防重复提交切面，核心写接口默认按“当前登录用户ID + 请求URI”做 3-5 秒窗口期幂等保护。
 - 已新增 `@LogOperation` 方法级注解、异步线程池与审计日志切面，关键写操作会异步落库到 `operation_log` 表，记录用户、角色、模块、动作、请求路径、IP 与耗时。
+- 已新增管理员审计日志分页查询接口 `GET /api/admin/operation-log/page`，支持按 `pageNum/pageSize/userId/role/module/keyword` 筛选，便于直接联调超时取消、重复提交拦截和核心写操作轨迹。
