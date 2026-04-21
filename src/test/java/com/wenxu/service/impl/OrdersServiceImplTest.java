@@ -15,6 +15,7 @@ import com.wenxu.entity.Sitter;
 import com.wenxu.mapper.OrdersMapper;
 import com.wenxu.mapper.PetInfoMapper;
 import com.wenxu.mapper.SitterMapper;
+import com.wenxu.service.SitterService;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Assertions;
@@ -28,6 +29,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -68,6 +70,9 @@ class OrdersServiceImplTest {
 
     @Mock
     private ZSetOperations<String, String> zSetOperations;
+
+    @Mock
+    private SitterService sitterService;
 
     @InjectMocks
     private OrdersServiceImpl ordersService;
@@ -361,6 +366,58 @@ class OrdersServiceImplTest {
 
         assertFalse(evaluated);
         verify(ordersMapper, never()).update(any(), any());
+    }
+
+    @Test
+    void cancelTimeoutOrdersShouldCancelPendingOrdersAndReleaseTargetSitters() {
+        Orders pendingPayment = new Orders();
+        pendingPayment.setId(20L);
+        pendingPayment.setStatus(OrderStatusEnum.PENDING_PAYMENT.getStatus());
+
+        Orders pendingAssigned = new Orders();
+        pendingAssigned.setId(21L);
+        pendingAssigned.setStatus(OrderStatusEnum.PENDING_ACCEPT.getStatus());
+        pendingAssigned.setTargetSitterId(10L);
+
+        when(ordersMapper.selectList(any())).thenReturn(List.of(pendingPayment, pendingAssigned));
+        when(ordersMapper.update(isNull(), any())).thenReturn(2);
+        when(sitterService.restoreWorkStatusToAccepting(10L)).thenReturn(true);
+
+        int canceledCount = ordersService.cancelTimeoutOrders(LocalDateTime.now().minusMinutes(15));
+
+        assertEquals(2, canceledCount);
+        LambdaUpdateWrapper<Orders> wrapper = captureOrderUpdateWrapper();
+        assertTrue(wrapper.getSqlSegment().contains("id"));
+        assertTrue(wrapper.getSqlSegment().contains("status"));
+        assertTrue(wrapper.getSqlSet().contains("version = version + 1"));
+        verify(sitterService).restoreWorkStatusToAccepting(10L);
+    }
+
+    @Test
+    void cancelTimeoutOrdersShouldReturnZeroWhenNoTimeoutOrderFound() {
+        when(ordersMapper.selectList(any())).thenReturn(List.of());
+
+        int canceledCount = ordersService.cancelTimeoutOrders(LocalDateTime.now().minusMinutes(15));
+
+        assertEquals(0, canceledCount);
+        verify(ordersMapper, never()).update(isNull(), any());
+        verify(sitterService, never()).restoreWorkStatusToAccepting(any());
+    }
+
+    @Test
+    void cancelTimeoutOrdersShouldNotReleaseSitterWhenBatchUpdateMisses() {
+        Orders pendingAssigned = new Orders();
+        pendingAssigned.setId(21L);
+        pendingAssigned.setStatus(OrderStatusEnum.PENDING_ACCEPT.getStatus());
+        pendingAssigned.setTargetSitterId(10L);
+
+        when(ordersMapper.selectList(any())).thenReturn(List.of(pendingAssigned));
+        when(ordersMapper.update(isNull(), any())).thenReturn(0);
+
+        int canceledCount = ordersService.cancelTimeoutOrders(LocalDateTime.now().minusMinutes(15));
+
+        assertEquals(0, canceledCount);
+        verify(sitterService, never()).restoreWorkStatusToAccepting(any());
     }
 
     @Test

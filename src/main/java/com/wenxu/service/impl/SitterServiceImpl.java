@@ -125,4 +125,14 @@ public class SitterServiceImpl implements SitterService {
                 .set(Sitter::getWorkStatus, workStatus);
         return sitterMapper.update(null, updateWrapper) > 0;
     }
+
+    @Override
+    public boolean restoreWorkStatusToAccepting(Long sitterId) {
+        LambdaUpdateWrapper<Sitter> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(Sitter::getId, sitterId)
+                .eq(Sitter::getAuditStatus, SitterAuditStatusEnum.APPROVED.getStatus())
+                .ne(Sitter::getWorkStatus, SitterWorkStatusEnum.ACCEPTING.getStatus())
+                .set(Sitter::getWorkStatus, SitterWorkStatusEnum.ACCEPTING.getStatus());
+        return sitterMapper.update(null, updateWrapper) > 0;
+    }
 }

@@ -16,4 +16,6 @@ public interface SitterService {
     Sitter getMyProfile(Long userId);
 
     boolean switchWorkStatus(Long userId, Integer workStatus);
+
+    boolean restoreWorkStatusToAccepting(Long sitterId);
 }

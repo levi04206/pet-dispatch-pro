@@ -4,6 +4,7 @@ import com.wenxu.dto.OrderCreateDTO;
 import com.wenxu.dto.OrderEvaluateDTO;
 import com.wenxu.entity.Orders;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface OrdersService {
@@ -35,4 +36,6 @@ public interface OrdersService {
     boolean startService(Long orderId, String picUrl, Long userId);
 
     boolean completeService(Long orderId, String picUrl, Long userId);
+
+    int cancelTimeoutOrders(LocalDateTime deadline);
 }

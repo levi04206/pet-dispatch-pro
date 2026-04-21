@@ -17,6 +17,7 @@ import com.wenxu.mapper.OrdersMapper;
 import com.wenxu.mapper.PetInfoMapper;
 import com.wenxu.mapper.SitterMapper;
 import com.wenxu.service.OrdersService;
+import com.wenxu.service.SitterService;
 import jakarta.annotation.Resource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,8 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class OrdersServiceImpl implements OrdersService {
@@ -45,6 +48,9 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+
+    @Resource
+    private SitterService sitterService;
 
     @Override
     public Orders createOrder(OrderCreateDTO orderCreateDTO, Long userId) {
@@ -319,6 +325,43 @@ public class OrdersServiceImpl implements OrdersService {
             throw new IllegalStateException("宠托师履约统计更新失败");
         }
         return true;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int cancelTimeoutOrders(LocalDateTime deadline) {
+        List<Orders> timeoutOrders = ordersMapper.selectList(new LambdaQueryWrapper<Orders>()
+                .in(Orders::getStatus,
+                        OrderStatusEnum.PENDING_PAYMENT.getStatus(),
+                        OrderStatusEnum.PENDING_ACCEPT.getStatus())
+                .le(Orders::getCreateTime, deadline));
+        if (timeoutOrders.isEmpty()) {
+            return 0;
+        }
+
+        List<Long> orderIds = timeoutOrders.stream()
+                .map(Orders::getId)
+                .toList();
+
+        LambdaUpdateWrapper<Orders> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.in(Orders::getId, orderIds)
+                .in(Orders::getStatus,
+                        OrderStatusEnum.PENDING_PAYMENT.getStatus(),
+                        OrderStatusEnum.PENDING_ACCEPT.getStatus())
+                .set(Orders::getStatus, OrderStatusEnum.CANCELED.getStatus())
+                .setSql("version = version + 1");
+        int canceledCount = ordersMapper.update(null, updateWrapper);
+
+        if (canceledCount > 0) {
+            Set<Long> targetSitterIds = timeoutOrders.stream()
+                    .map(Orders::getTargetSitterId)
+                    .filter(id -> id != null)
+                    .collect(Collectors.toSet());
+            for (Long sitterId : targetSitterIds) {
+                sitterService.restoreWorkStatusToAccepting(sitterId);
+            }
+        }
+        return canceledCount;
     }
 
     private Sitter getAvailableSitter(Long userId) {
