@@ -1,5 +1,7 @@
 package com.wenxu.controller;
 
+import com.wenxu.annotation.Idempotent;
+import com.wenxu.annotation.LogOperation;
 import com.wenxu.common.ApiMessages;
 import com.wenxu.common.BaseContext;
 import com.wenxu.common.Result;
@@ -36,6 +38,8 @@ public class PetInfoController {
      * 新增当前用户的宠物档案。
      */
     @PostMapping("/add")
+    @Idempotent(expireTime = 5)
+    @LogOperation(module = "宠物模块", action = "新增宠物")
     public Result<String> addPet(@Valid @RequestBody PetInfoAddDTO petInfoAddDTO) {
         Long userId = BaseContext.getCurrentId();
         petInfoService.addPet(petInfoAddDTO, userId);
@@ -56,6 +60,8 @@ public class PetInfoController {
      * 修改当前用户自己的宠物档案，避免修改他人宠物。
      */
     @PutMapping("/{id}")
+    @Idempotent(expireTime = 5)
+    @LogOperation(module = "宠物模块", action = "修改宠物")
     public Result<String> updatePet(@PathVariable Long id, @Valid @RequestBody PetInfoUpdateDTO petInfoUpdateDTO) {
         Long userId = BaseContext.getCurrentId();
         boolean updated = petInfoService.updateMyPet(id, petInfoUpdateDTO, userId);
@@ -69,6 +75,8 @@ public class PetInfoController {
      * 删除当前用户自己的宠物档案，避免删除他人宠物。
      */
     @DeleteMapping("/{id}")
+    @Idempotent(expireTime = 5)
+    @LogOperation(module = "宠物模块", action = "删除宠物")
     public Result<String> deletePet(@PathVariable Long id) {
         Long userId = BaseContext.getCurrentId();
         boolean deleted = petInfoService.deleteMyPet(id, userId);

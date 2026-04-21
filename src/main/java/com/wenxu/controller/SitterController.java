@@ -1,5 +1,7 @@
 package com.wenxu.controller;
 
+import com.wenxu.annotation.Idempotent;
+import com.wenxu.annotation.LogOperation;
 import com.wenxu.common.ApiMessages;
 import com.wenxu.common.BaseContext;
 import com.wenxu.common.Result;
@@ -31,6 +33,8 @@ public class SitterController {
      * 用户提交宠托师入驻申请。
      */
     @PostMapping("/apply")
+    @Idempotent(expireTime = 5)
+    @LogOperation(module = "宠托师模块", action = "申请入驻")
     public Result<String> applySitter(@Valid @RequestBody SitterApplyDTO sitterApplyDTO) {
         Long currentUserId = BaseContext.getCurrentId();
         boolean applied = sitterService.applySitter(sitterApplyDTO, currentUserId);
@@ -57,6 +61,8 @@ public class SitterController {
      * 切换宠托师工作状态：0 休息中，1 接单中。
      */
     @PostMapping("/workStatus")
+    @Idempotent(expireTime = 3)
+    @LogOperation(module = "宠托师模块", action = "切换工作状态")
     public Result<String> switchWorkStatus(@RequestParam Integer workStatus) {
         Long currentUserId = BaseContext.getCurrentId();
         boolean switched = sitterService.switchWorkStatus(currentUserId, workStatus);

@@ -11,10 +11,10 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void handleIllegalArgumentShouldReturnBusinessMessage() {
-        Result<String> result = globalExceptionHandler.handleIllegalArgument(new IllegalArgumentException("宠物不存在或无权下单"));
+        Result<String> result = globalExceptionHandler.handleIllegalArgument(new IllegalArgumentException("瀹犵墿涓嶅瓨鍦ㄦ垨鏃犳潈涓嬪崟"));
 
         assertEquals(0, result.getCode());
-        assertEquals("宠物不存在或无权下单", result.getMsg());
+        assertEquals("瀹犵墿涓嶅瓨鍦ㄦ垨鏃犳潈涓嬪崟", result.getMsg());
     }
 
     @Test
@@ -23,5 +23,13 @@ class GlobalExceptionHandlerTest {
 
         assertEquals(0, result.getCode());
         assertEquals("系统繁忙，请稍后再试", result.getMsg());
+    }
+
+    @Test
+    void handleRepeatSubmitShouldReturnBusinessMessage() {
+        Result<String> result = globalExceptionHandler.handleRepeatSubmit(new RepeatSubmitException("请求过于频繁，请稍后再试"));
+
+        assertEquals(0, result.getCode());
+        assertEquals("请求过于频繁，请稍后再试", result.getMsg());
     }
 }

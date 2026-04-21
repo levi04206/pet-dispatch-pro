@@ -1,5 +1,7 @@
 package com.wenxu.controller.admin;
 
+import com.wenxu.annotation.Idempotent;
+import com.wenxu.annotation.LogOperation;
 import com.wenxu.common.ApiMessages;
 import com.wenxu.common.Result;
 import com.wenxu.converter.SitterConverter;
@@ -36,6 +38,8 @@ public class AdminSitterController {
      * 管理员审核宠托师申请：1 通过，2 驳回。
      */
     @PostMapping("/audit")
+    @Idempotent(expireTime = 5)
+    @LogOperation(module = "宠托师审核模块", action = "审核宠托师")
     public Result<String> auditSitter(@RequestParam Long id, @RequestParam Integer auditStatus) {
         if (auditStatus != 1 && auditStatus != 2) {
             return Result.error(ApiMessages.SITTER_AUDIT_STATUS_INVALID);

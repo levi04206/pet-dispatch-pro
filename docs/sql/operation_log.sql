@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS operation_log (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键',
+    user_id BIGINT NULL COMMENT '操作用户ID',
+    role VARCHAR(32) NULL COMMENT '当前角色',
+    module VARCHAR(64) NOT NULL COMMENT '模块名称',
+    action VARCHAR(255) NOT NULL COMMENT '具体操作描述',
+    request_path VARCHAR(255) NOT NULL COMMENT '请求方法与路径',
+    ip VARCHAR(64) NULL COMMENT '客户端IP',
+    cost_time_ms BIGINT NOT NULL DEFAULT 0 COMMENT '接口耗时ms',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
+) COMMENT='统一操作审计日志表';

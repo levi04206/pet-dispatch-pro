@@ -18,4 +18,6 @@ public class RedisConstants {
 
     /** 宠托师评分排行榜，score 为综合评分，member 为 sitterId */
     public static final String SITTER_RANK_RATING_KEY = "pet:sitter:rank:rating";
+
+    public static final String IDEMPOTENT_KEY_PREFIX = "pet:idempotent:";
 }

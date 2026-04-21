@@ -43,6 +43,11 @@ public class GlobalExceptionHandler {
         return Result.error(ex.getMessage());
     }
 
+    @ExceptionHandler(RepeatSubmitException.class)
+    public Result<String> handleRepeatSubmit(RepeatSubmitException ex) {
+        return Result.error(ex.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public Result<String> handleException(Exception ex) {
         // 未预期异常只记录日志，响应给前端统一兜底文案，避免泄露内部细节。
