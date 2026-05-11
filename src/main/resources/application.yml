@@ -19,6 +19,13 @@ spring:
       port: ${SPRING_DATA_REDIS_PORT:6379}
       password: ${SPRING_DATA_REDIS_PASSWORD:}
 
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:sk-local-development-placeholder}
+      chat:
+        options:
+          model: ${OPENAI_CHAT_MODEL:gpt-4o-mini}
+
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
