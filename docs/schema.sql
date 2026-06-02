@@ -85,3 +85,19 @@ CREATE TABLE IF NOT EXISTS `orders` (
     KEY `idx_sitter_id` (`sitter_id`),
     KEY `idx_target_sitter_id` (`target_sitter_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='核心调度订单表';
+
+CREATE TABLE IF NOT EXISTS `operation_log` (
+    `id` bigint NOT NULL AUTO_INCREMENT COMMENT '审计日志ID',
+    `user_id` bigint DEFAULT NULL COMMENT '操作用户ID',
+    `role` varchar(32) DEFAULT NULL COMMENT '当前角色',
+    `module` varchar(64) NOT NULL COMMENT '模块名称',
+    `action` varchar(255) NOT NULL COMMENT '具体操作描述',
+    `request_path` varchar(255) NOT NULL COMMENT '请求方法与路径',
+    `ip` varchar(64) DEFAULT NULL COMMENT '客户端IP',
+    `cost_time_ms` bigint NOT NULL DEFAULT '0' COMMENT '接口耗时ms',
+    `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_module` (`module`),
+    KEY `idx_create_time` (`create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='统一操作审计日志表';
